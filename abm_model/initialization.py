@@ -1,51 +1,54 @@
-from abm_model.firm import Firm
-from abm_model.bank import Bank
+from abm_model.firms import BaseFirm, Firm
+from abm_model.banks import BaseBank, Bank
+from abm_model.baseclass import BaseAgent
 import numpy as np
 
-h_theta = 0.5
+h_theta = 0.1
 
-def generate_random_firms_and_banks(firms_idx, banks_idx):
+
+def generate_random_firms_and_banks(firms_ids, banks_ids):
+    # base agent, base bank and base firm
+    base_agent = BaseAgent()
+    base_firm = BaseFirm()
+    base_bank = BaseBank()
+    base_agent.change_policy_rate(0.02)
+    base_agent.change_firm_ids(firms_ids)
+    base_agent.change_bank_ids(banks_ids)
+    base_agent.change_max_bank_loan(3)
+    base_agent.change_max_interbank_loan(2)
+    base_firm.change_market_price(10)
+    base_firm.change_min_wage(200)
+    base_bank.change_h_theta(0.1)
+
+    # create actual firms
     firms = {}
+    firm_equity = [max(1000 * x,100) for x in np.random.poisson(4, len(firms_ids))]
+    productivity = [0.3] * len(firms_ids)
+    excess_supply = [100 * x for x in np.random.poisson(4, len(firms_ids))]
+    supply = [max(400 * x, 70) for x in np.random.poisson(4, len(firms_ids))]
+    price = [base_firm.market_price + np.random.normal(0, 0.3) for x in range(len(firms_ids))]
+    wage = [base_firm.min_wage + np.random.exponential(4) for x in range(len(firms_ids))]
+    default_probability = [min(x, 0.01) for x in np.random.beta(a=1.9, b=8, size=len(firms_ids))]
+    for i in range(len(firms_ids)):
+        firms[firms_ids[i]] = Firm(
+            idx=firms_ids[i],
+            supply=supply[i],
+            excess_supply=excess_supply[i],
+            price=price[i],
+            wage=wage[i],
+            equity=firm_equity[i],
+            productivity=productivity[i],
+            default_probability=default_probability[i]
+        )
 
-    market_price = 10
-    min_wage = 200
-    max_banks_loan=3
-    base_equity = [1000 * x for x in np.random.poisson(4, len(firms_idx))]
-    base_equity = [max(x, 100) for x in base_equity]
-    productivity = [0.3] * len(firms_idx)
-    supply = [100 * x for x in np.random.poisson(4, len(firms_idx))]
-    price = [market_price + np.random.normal(0,0.3) for x in range(len(firms_idx))]
-    wage=[min_wage+np.random.exponential(4) for x in range(len(firms_idx))]
-    market_price = np.mean(price)
-
-    for i in range(len(firms_idx)):
-        firms[firms_idx[i]] = Firm(idx=firms_idx[i],
-                                   market_price=market_price,
-                                   supply=supply[i],
-                                   price=price[i],
-                                   min_wage = min_wage,
-                                   wage=wage[i],
-                                   equity_level = base_equity[i],
-                                   productivity = productivity[i],
-                                   firm_ids=firms_idx,
-                                   bank_ids=banks_idx,
-                                   loans=None,
-                                   num_firms=len(firms_idx),
-                                   num_banks=len(banks_idx),
-                                   max_banks_loan=max_banks_loan)
+    # create actual banks
     banks = {}
     capital_req = 0.9
-    policy_rate = 0.02
-    bank_equity = [10000000 * x for x in np.random.poisson(4, len(banks_idx))]
-    bank_equity = [min(10000000/2, x) for x in bank_equity]
-    for i in range(len(banks_idx)):
-        banks[banks_idx[i]] = Bank(idx=banks_idx[i],
-                                   firm_ids=firms_idx,
-                                   bank_ids=banks_idx,
+    bank_equity = [min(10000000/2, 10000000 * x) for x in np.random.poisson(4, len(banks_ids))]
+    bank_deposit = [x/y for x, y in zip(bank_equity, np.random.beta(a=2, b=3, size=len(banks_ids)))]
+    for i in range(len(banks_ids)):
+        banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],
-                                   capital_req=capital_req,
-                                   policy_rate=policy_rate,
-                                   bank_loans=[],
-                                   firm_loans=[],
-                                   h_theta=h_theta)
+                                   deposits=bank_deposit[i],
+                                   capital_requirement=capital_req)
     return firms, banks

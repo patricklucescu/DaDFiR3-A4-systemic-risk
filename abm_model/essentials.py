@@ -27,4 +27,17 @@ def supply_adj():
     return np.random.uniform(0, max_increase_quantity, 1)
 
 
+def compute_expected_supply_price(excess_supply, prev_supply, prev_price, market_price):
+    statement_1 = (excess_supply > 0 and prev_price >= market_price)
+    statement_2 = (excess_supply == 0 and prev_price < market_price)
+    statement_3 = (excess_supply > 0 and prev_price < market_price)
+    statement_4 = (excess_supply == 0 and prev_price >= market_price)
+    if statement_1 or statement_2:  # price adjustments
+        supply = prev_supply
+        price = prev_price * (1 + price_adj()[0] * [-1 if statement_1 else 1][0])
+    else:
+        price = prev_price
+        supply = prev_supply * (1 + supply_adj()[0] * [-1 if statement_1 else 1][0])
+    return price, supply
+
 
