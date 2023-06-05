@@ -28,35 +28,34 @@ class Bank(BaseBank):
         self.equity = equity
         self.deposits = deposits
         self.capital_requirement = capital_requirement
-        self.firm_loans = []
-        self.bank_loans = []
-        self.sold_cds = []
-        self.bought_cds = []
         self.max_credit = None
-        self.assets = []
-        self.liabilities = []
+        self.assets = {'loans': [], 'cds': []}
+        self.liabilities = {'loans': [], 'cds': []}
 
     def update_max_credit(self):
         self.max_credit = self.deposits / self.capital_requirement
 
-    def asses_loan_request_firms(self, loans: list[Loan]):
+    def asses_loan_requests(self, loans: list[Loan]):
         loan_offers = []
         for loan in loans:
-            if loan.amount > self.max_credit:
+            if loan.notional_amount > self.max_credit:
                 continue
-            loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
-                                                          np.tanh((1 + np.random.uniform(0.9, 1.1) *
-                                                                   loan.prob_default_borrower) *
-                                                                  loan.financial_fragility_borrower)))
-
-            loan_offers.append(loan)
+            if loan.borrower in self.firm_ids:
+                loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
+                                                              np.tanh((1 + np.random.uniform(0.9, 1.1) *
+                                                                       loan.prob_default_borrower) *
+                                                                      loan.financial_fragility_borrower)))
+                loan_offers.append(loan)
+            else:  # we have an interbank loan
+                loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
+                                                              np.tanh((1 + np.random.uniform(0.9, 1.1) *
+                                                                       loan.prob_default_borrower) *
+                                                                      loan.financial_fragility_borrower)))
         return loan_offers
 
-    def asses_loan_request_banks(self, loan: Loan):
-        if loan.amount > self.max_credit:
-            loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
-                                                          np.tanh((1 + np.random.uniform(0.9, 1.1) *
-                                                                   loan.prob_default_borrower) *
-                                                                  loan.financial_fragility_borrower)))
+    def check_loan(self, loan):
+        if (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
+                sum([x.spread * x.notional_amount for x in self.assets['cds']]) > self.max_credit):
+            return False
+        return True
 
-        return
