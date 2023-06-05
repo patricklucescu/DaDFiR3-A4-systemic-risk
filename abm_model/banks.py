@@ -47,6 +47,7 @@ class Bank(BaseBank):
                                                                       loan.financial_fragility_borrower)))
                 loan_offers.append(loan)
             else:  # we have an interbank loan
+                #TODO: change function
                 loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
                                                               np.tanh((1 + np.random.uniform(0.9, 1.1) *
                                                                        loan.prob_default_borrower) *
@@ -57,5 +58,5 @@ class Bank(BaseBank):
         if (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
                 sum([x.spread * x.notional_amount for x in self.assets['cds']]) > self.max_credit):
             return False
-        return True
+
 

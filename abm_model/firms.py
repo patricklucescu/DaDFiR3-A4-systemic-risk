@@ -64,7 +64,7 @@ class Firm(BaseFirm):
             # pick random banks
             potential_lenders = [Loan(lender=x,
                                       borrower=self.idx,
-                                      amount=self.credit_demand,
+                                      notional_amount=self.credit_demand,
                                       financial_fragility_borrower=self.financial_fragility,
                                       prob_default_borrower=self.default_probability,
                                       ) for x in random.choices(self.bank_ids, k=self.max_bank_loan)
