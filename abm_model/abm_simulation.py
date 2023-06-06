@@ -41,11 +41,53 @@ for t in range(T):
     loan_clearing_order = random.sample(list(firms.keys()), len(list(firms.keys())))
     # start the network allocation of loans and cds
     for firm_id in loan_clearing_order:
-        loan_extended = False
         loans_offered = loan_offers[firm_id]
+        loan_extended = False
         for loan in loans_offered:
-            if banks[loan.borrower].check_loan(loan):
-                a = 2
+            bank_condition = banks[loan.lender].check_loan(loan)
+            if not bank_condition:
+                continue
+            elif bank_condition > 0:  # bank has enough money to extend the loan directly
+                loan_extended = True
+            else:
+                credit_needed = - bank_condition
+                interbank_loans = banks[loan.lender].get_potential_interbank_loans(credit_needed, loan.notional_amount)
+                interbank_loans = [banks[bank_loan.lender].asses_loan_requests([bank_loan])
+                                   for bank_loan in interbank_loans]
+                interbank_loans = list(itertools.chain(*interbank_loans))
+                interbank_loans = [bank_loan for bank_loan in interbank_loans
+                                   if banks[bank_loan.lender].check_loan(bank_loan) > 0]
+                interbank_loans = sorted(interbank_loans, key=lambda y: y.interest_rate)
+                if len(interbank_loans) == 0:
+                    continue
+                bank_loan = interbank_loans[0]
+                # extend the interbank loan
+                banks[loan.lender].assets['loans'].append(bank_loan)
+                banks[loan.borrower].liabilities['loans'].append(bank_loan)
+                logs.append(LogMessage(
+                    message=f'Interbank loan extended from {loan.lender} to {loan.borrower}',
+                    time=t,
+                    data=bank_loan.copy()
+                ))
+                # extend the firm loan
+                loan_extended = True
+            if loan_extended:
+                banks[loan.lender].assets['loans'].append(loan)
+                firms[loan.borrower].loans.append(loan)
+                firms[loan.borrower].equity += loan.notional_amount
+                logs.append(LogMessage(
+                    message=f'Loan extended from {loan.lender} to {loan.borrower}',
+                    time=t,
+                    data=loan.copy()
+                ))
+                # Now start CDS market on this particular loan
+
+                break
+
+
+
+
+
 
 
 

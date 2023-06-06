@@ -1,6 +1,7 @@
 from abm_model.loan import Loan
 from abm_model.baseclass import BaseAgent
 import numpy as np
+import random
 
 
 class BaseBank(BaseAgent):
@@ -47,16 +48,25 @@ class Bank(BaseBank):
                                                                       loan.financial_fragility_borrower)))
                 loan_offers.append(loan)
             else:  # we have an interbank loan
-                #TODO: change function
+                # TODO: change function if needed
                 loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
-                                                              np.tanh((1 + np.random.uniform(0.9, 1.1) *
-                                                                       loan.prob_default_borrower) *
-                                                                      loan.financial_fragility_borrower)))
+                                                              np.tanh(loan.financial_fragility_borrower)))
+                loan_offers.append(loan)
         return loan_offers
 
     def check_loan(self, loan):
         if (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
                 sum([x.spread * x.notional_amount for x in self.assets['cds']]) > self.max_credit):
             return False
+        return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) -
+                (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
+                 sum([x.spread * x.notional_amount for x in self.assets['cds']])))
 
+    def get_potential_interbank_loans(self, credit_needed, notional_amount):
+        financial_fragility = (notional_amount + sum([x.notional_amount for x in self.assets['loans']])) / self.deposits
+        return [Loan(lender=x, borrower=self.idx,
+                     notional_amount=credit_needed,
+                     financial_fragility_borrower=financial_fragility)
+                for x in random.choices(self.bank_ids, k=self.max_interbank_loan)
+                ]
 

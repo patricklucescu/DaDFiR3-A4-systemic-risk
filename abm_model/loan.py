@@ -6,7 +6,7 @@ class Loan:
                  borrower,
                  notional_amount,
                  financial_fragility_borrower,
-                 prob_default_borrower,
+                 prob_default_borrower=None,
                  interest_rate=None):
         self.lender = lender
         self.borrower = borrower
