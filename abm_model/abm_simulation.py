@@ -40,6 +40,7 @@ for t in range(T):
     # now generate random order for the firms to claim their loans
     loan_clearing_order = random.sample(list(firms.keys()), len(list(firms.keys())))
     # start the network allocation of loans and cds
+    # TODO: firm might have no loan, check beforehand to avoid key error
     for firm_id in loan_clearing_order:
         loans_offered = loan_offers[firm_id]
         loan_extended = False
@@ -50,6 +51,7 @@ for t in range(T):
             elif bank_condition > 0:  # bank has enough money to extend the loan directly
                 loan_extended = True
             else:
+                # TODO: bank might be selected as own counterparty and loan was granted in one example (how?)
                 credit_needed = - bank_condition
                 interbank_loans = banks[loan.lender].get_potential_interbank_loans(credit_needed, loan.notional_amount)
                 interbank_loans = [banks[bank_loan.lender].asses_loan_requests([bank_loan])
@@ -62,10 +64,10 @@ for t in range(T):
                     continue
                 bank_loan = interbank_loans[0]
                 # extend the interbank loan
-                banks[loan.lender].assets['loans'].append(bank_loan)
-                banks[loan.borrower].liabilities['loans'].append(bank_loan)
+                banks[bank_loan.lender].assets['loans'].append(bank_loan)
+                banks[bank_loan.borrower].liabilities['loans'].append(bank_loan)
                 logs.append(LogMessage(
-                    message=f'Interbank loan extended from {loan.lender} to {loan.borrower}',
+                    message=f'Interbank loan extended from {bank_loan.lender} to {bank_loan.borrower}',
                     time=t,
                     data=bank_loan.copy()
                 ))
@@ -83,8 +85,6 @@ for t in range(T):
                 # Now start CDS market on this particular loan
 
                 break
-
-
 
 
 
