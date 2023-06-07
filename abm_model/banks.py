@@ -23,12 +23,16 @@ class Bank(BaseBank):
                  equity,
                  deposits,
                  capital_requirement,
+                 covered_cds_prob,
+                 naked_cds_prob
                  ):
         super().__init__()
         self.idx = idx
         self.equity = equity
         self.deposits = deposits
         self.capital_requirement = capital_requirement
+        self.covered_cds_prob = covered_cds_prob
+        self.naked_cds_prob = naked_cds_prob
         self.max_credit = None
         self.assets = {'loans': [], 'cds': []}
         self.liabilities = {'loans': [], 'cds': []}
@@ -67,6 +71,11 @@ class Bank(BaseBank):
         return [Loan(lender=x, borrower=self.idx,
                      notional_amount=credit_needed,
                      financial_fragility_borrower=financial_fragility)
-                for x in random.choices(self.bank_ids, k=self.max_interbank_loan)
+                for x in random.choices([x for x in self.bank_ids if x != self.idx], k=self.max_interbank_loan)
                 ]
 
+    def decide_cds(self, covered=True):
+        if covered:
+            return np.random.binomial(1, self.covered_cds_prob)
+        else:
+            return np.random.binomial(1, self.naked_cds_prob)

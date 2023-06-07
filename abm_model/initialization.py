@@ -6,7 +6,7 @@ import numpy as np
 h_theta = 0.1
 
 
-def generate_random_firms_and_banks(firms_ids, banks_ids):
+def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, naked_cds_prob):
     # base agent, base bank and base firm
     base_agent = BaseAgent()
     base_firm = BaseFirm()
@@ -50,5 +50,7 @@ def generate_random_firms_and_banks(firms_ids, banks_ids):
         banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],
                                    deposits=bank_deposit[i],
-                                   capital_requirement=capital_req)
+                                   capital_requirement=capital_req,
+                                   covered_cds_prob=covered_cds_prob,
+                                   naked_cds_prob=naked_cds_prob)
     return firms, banks

@@ -9,11 +9,13 @@ import itertools
 FIRMS = 100
 BANKS = 10
 T = 10
+covered_cds_prob = 0.8
+naked_cds_prob = 0.2
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
 banks_idx = [f'bank_{x}' for x in range(1, BANKS + 1)]
-firms, banks = generate_random_firms_and_banks(firms_idx, banks_idx)
+firms, banks = generate_random_firms_and_banks(firms_idx, banks_idx, covered_cds_prob, naked_cds_prob)
 
 # create logs
 logs = []
@@ -38,9 +40,8 @@ for t in range(T):
     loan_offers = merge_dict([{loan.borrower: loan} for loan in loan_offers])
     loan_offers = {firm_id: sorted(loan_offers[firm_id], key=lambda y: y.interest_rate) for firm_id in loan_offers}
     # now generate random order for the firms to claim their loans
-    loan_clearing_order = random.sample(list(firms.keys()), len(list(firms.keys())))
+    loan_clearing_order = random.sample(list(loan_offers.keys()), len(list(loan_offers.keys())))
     # start the network allocation of loans and cds
-    # TODO: firm might have no loan, check beforehand to avoid key error
     for firm_id in loan_clearing_order:
         loans_offered = loan_offers[firm_id]
         loan_extended = False
@@ -51,7 +52,6 @@ for t in range(T):
             elif bank_condition > 0:  # bank has enough money to extend the loan directly
                 loan_extended = True
             else:
-                # TODO: bank might be selected as own counterparty and loan was granted in one example (how?)
                 credit_needed = - bank_condition
                 interbank_loans = banks[loan.lender].get_potential_interbank_loans(credit_needed, loan.notional_amount)
                 interbank_loans = [banks[bank_loan.lender].asses_loan_requests([bank_loan])
