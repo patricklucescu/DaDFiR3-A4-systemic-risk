@@ -16,6 +16,7 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     base_agent.change_bank_ids(banks_ids)
     base_agent.change_max_bank_loan(3)
     base_agent.change_max_interbank_loan(2)
+    base_agent.change_max_cds_requests(3)
     base_firm.change_market_price(10)
     base_firm.change_min_wage(200)
     base_bank.change_h_theta(0.1)
@@ -45,7 +46,7 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     banks = {}
     capital_req = 0.9
     bank_equity = [min(10000000/2, 10000000 * x) for x in np.random.poisson(4, len(banks_ids))]
-    bank_deposit = [x/y for x, y in zip(bank_equity, np.random.beta(a=2, b=3, size=len(banks_ids)))]
+    bank_deposit = [x/y for x, y in zip(bank_equity, np.random.beta(a=3, b=18, size=len(banks_ids)))]
     for i in range(len(banks_ids)):
         banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],
