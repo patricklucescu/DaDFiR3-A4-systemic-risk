@@ -53,4 +53,4 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
                                    capital_requirement=capital_req,
                                    covered_cds_prob=covered_cds_prob,
                                    naked_cds_prob=naked_cds_prob)
-    return firms, banks
+    return firms, banks, base_agent, base_firm, base_bank

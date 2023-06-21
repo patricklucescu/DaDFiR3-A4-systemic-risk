@@ -18,3 +18,5 @@ class CDS:
         self.risk_free_rate = risk_free_rate
         self.spread = None
 
+    def update_spread(self, spread):
+        self.spread = spread

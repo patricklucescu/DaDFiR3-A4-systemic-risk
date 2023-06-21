@@ -78,7 +78,16 @@ class Firm(BaseFirm):
             #  we need to reduce supply
             self.supply = self.equity * self.productivity / self.wage
 
-    def produce_supply_consumption(self):
+    def produce_supply_consumption(self, min_consumption, max_consumption, overall_consumption, consumption_std):
         self.created_supply = self.supply
         self.equity -= self.total_wages
-        return self.total_wages, int(self.created_supply / self.productivity), self.wage
+        actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
+                                                                                  consumption_std)), max_consumption)
+        self.equity += self.price * actual_consumption_percentage * self.created_supply
+        self.excess_supply = self.created_supply - actual_consumption_percentage * self.created_supply
+
+
+
+
+
+
