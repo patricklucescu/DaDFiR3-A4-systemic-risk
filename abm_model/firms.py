@@ -94,4 +94,5 @@ class Firm(BaseFirm):
     def check_default(self):
         if self.equity < sum([(1+loan.interest_rate) * loan.notional_amount for loan in self.loans]):
             # we have default of the entity
-            a=2
+            return True
+        return False

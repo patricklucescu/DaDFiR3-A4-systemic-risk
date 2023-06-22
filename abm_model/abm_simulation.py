@@ -164,9 +164,8 @@ for t in range(T):
                                                   consumption_std)
 
     # see which firms remain solvent
-    for firm_id in firms.keys():
-        break
-
+    defaulted_firms = [firms[firm_id].idx for firm_id in firms.keys() if firms[firm_id].check_default()]
+    #
 
 
 
