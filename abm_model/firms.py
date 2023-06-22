@@ -43,7 +43,6 @@ class Firm(BaseFirm):
         self.credit_demand = None
         self.financial_fragility = None
         self.potential_lenders = None
-        self.created_supply = None
 
     def compute_expected_supply_and_prices(self):
         """
@@ -79,15 +78,20 @@ class Firm(BaseFirm):
             self.supply = self.equity * self.productivity / self.wage
 
     def produce_supply_consumption(self, min_consumption, max_consumption, overall_consumption, consumption_std):
-        self.created_supply = self.supply
         self.equity -= self.total_wages
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)
-        self.equity += self.price * actual_consumption_percentage * self.created_supply
-        self.excess_supply = self.created_supply - actual_consumption_percentage * self.created_supply
+        self.equity += self.price * actual_consumption_percentage * self.supply
+        self.excess_supply = self.supply - actual_consumption_percentage * self.supply
 
+    def reset_variables(self):
+        self.loans = []
+        self.total_wages = None
+        self.credit_demand = None
+        self.financial_fragility = None
+        self.potential_lenders = None
 
-
-
-
-
+    def check_default(self):
+        if self.equity < sum([(1+loan.interest_rate) * loan.notional_amount for loan in self.loans]):
+            # we have default of the entity
+            a=2

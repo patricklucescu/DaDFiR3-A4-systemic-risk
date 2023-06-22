@@ -163,8 +163,8 @@ for t in range(T):
                                                   overall_consumption,
                                                   consumption_std)
 
+    # see which firms remain solvent
     for firm_id in firms.keys():
-
         break
 
 
