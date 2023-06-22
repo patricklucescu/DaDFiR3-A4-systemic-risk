@@ -2,6 +2,7 @@ from abm_model.credit_default_swap import CDS
 from abm_model.initialization import generate_random_firms_and_banks
 from abm_model.essentials import *
 from abm_model.logs import LogMessage
+from abm_model.return_evaluation import *
 import random
 from numpy import random as npr
 import itertools
@@ -15,6 +16,7 @@ naked_cds_prob = 0.1
 
 counter_interbank_loan_request = 0
 counter_interbank_loan_accepted = 0
+historic_bank_equity = {}
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
@@ -133,8 +135,4 @@ for t in range(T):
     #cds payment
     #bank defaults
 
-
-
-
-
-    t
+    historic_bank_equity = update_history(historic_bank_equity, banks, t)
