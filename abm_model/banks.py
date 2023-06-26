@@ -79,3 +79,17 @@ class Bank(BaseBank):
             return np.random.binomial(1, self.covered_cds_prob)
         else:
             return np.random.binomial(1, self.naked_cds_prob)
+
+    def provide_cds_spread(self, loan):
+        # add random noise to cds spread or use cds valuation method
+        cds_tax = self.cds_tax()
+        return loan.prob_default_borrower + cds_tax
+
+    # add cds tax function based on systemic risk
+    def cds_tax(self):
+        return np.random.uniform(-0.00999999, 0.04)
+
+    def check_cds(self, premium):
+        return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
+                (sum([x.notional_amount for x in self.assets['loans']]) +
+                 sum([x.spread * x.notional_amount for x in self.assets['cds']])) >= premium)

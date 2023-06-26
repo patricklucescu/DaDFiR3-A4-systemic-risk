@@ -26,3 +26,7 @@ class BaseAgent:
     @classmethod
     def change_max_bank_loan(cls, new_value):
         cls.max_bank_loan = new_value
+
+    @classmethod
+    def change_max_cds_requests(cls, new_value):
+        cls.max_cds_requests = new_value

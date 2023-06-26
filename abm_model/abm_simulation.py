@@ -31,7 +31,7 @@ economy_state = MarkovModel(starting_prob=starting_prob,
 
 # good consumption based on economy state
 good_consumption = [0.8, 0.6]
-good_consumption_std = [0.3, 0.2]
+good_consumption_std = [0.2, 0.3]
 min_consumption = 0.1
 max_consumption = 0.96
 
@@ -101,57 +101,41 @@ for t in range(T):
                     data=copy.deepcopy(loan)
                 ))
                 # Now start CDS market on this particular loan
-                covered_cds_needed = banks[loan.lender].decide_cds(covered=True)
-                cds_market_participants = [bank_id for bank_id in [x for x in banks.keys() if x != loan.lender] if
-                                           banks[bank_id].decide_cds() == 1]
-                random.shuffle(cds_market_participants)
-                if covered_cds_needed and len(cds_market_participants) > 1:
-                    # we need a covered cds so first participant is grouped with the covered cds seller
-                    buyer = loan.lender
-                    seller = cds_market_participants[0]
-                    covered_cds = CDS(
-                        buyer=buyer,
-                        seller=seller,
-                        reference_entity=loan.borrower,
-                        default_probability=firms[loan.borrower].default_probability,
-                        notional_amount=loan.notional_amount,
-                        tenor=1,
-                        risk_free_rate=base_agent.policy_rate
-                    )
-                    # TODO: compute the spread
-                    covered_cds.update_spread(0.02)
-                    banks[buyer].liabilities['cds'].append(covered_cds)
-                    banks[seller].assets['cds'].append(covered_cds)
-                    logs.append(LogMessage(
-                        message=f'Covered CDS extended from {seller} to {buyer}',
-                        time=t,
-                        data=copy.deepcopy(covered_cds)
-                    ))
-                    cds_market_participants = cds_market_participants[1:]
-                # naked cds only now
-                # as list is already randomized just pick two consecutive elements to form a cds contract
-                while len(cds_market_participants) > 1:
-                    buyer = cds_market_participants[0]
-                    seller = cds_market_participants[1]
-                    naked_cds = CDS(
-                        buyer=buyer,
-                        seller=seller,
-                        reference_entity=loan.borrower,
-                        default_probability=firms[loan.borrower].default_probability,
-                        notional_amount=loan.notional_amount,
-                        tenor=1,
-                        risk_free_rate=base_agent.policy_rate
-                    )
-                    # TODO: compute the spread
-                    naked_cds.update_spread(0.02)
-                    banks[buyer].liabilities['cds'].append(naked_cds)
-                    banks[seller].assets['cds'].append(naked_cds)
-                    logs.append(LogMessage(
-                        message=f'Naked CDS extended from {seller} to {buyer}',
-                        time=t,
-                        data=copy.deepcopy(naked_cds)
-                    ))
-                    cds_market_participants = cds_market_participants[2:]
+                if (covered_cds_prob > 0 or naked_cds_prob > 0):
+                    # determine which banks want cds on this loan
+                    interested_cds_buyers = [bank_id for bank_id in banks if
+                                             (banks[bank_id].decide_cds(covered=(loan.lender == bank_id)))]
+                    # for each interested buyer, get offers from various bank according to max_cds_requests,
+                    # including only banks that are neither the lender bank itself nor any interested buyer (and
+                    # neither the bank as its own counterparty)
+                    cds_offers = [
+                        {bank_id_buyer: CDS(bank_id_buyer, counterparty_id, loan.borrower, loan.prob_default_borrower,
+                                            loan.notional_amount, banks[counterparty_id].provide_cds_spread(loan))}
+                        for bank_id_buyer in interested_cds_buyers
+                        for counterparty_id in random.choices([x for x in banks_idx if
+                                                               (x != banks[bank_id_buyer].idx and x != loan.lender
+                                                                and x not in interested_cds_buyers)],
+                                                              k=banks[bank_id_buyer].max_cds_requests)]
+
+                    cds_offers = merge_dict(cds_offers)
+                    cds_offers = {bank_id: sorted(cds_offers[bank_id], key=lambda y: y.spread) for bank_id in
+                                  cds_offers}
+                    # only consider the best offer (smallest spread)
+                    cds_offers = {bank_id: cds_offers[bank_id][0] for bank_id in cds_offers}
+                    # see if cds is affordable for buyer, add to transaction-list if so
+                    cds_transactions = {bank_id: cds_offers[bank_id] for bank_id in cds_offers
+                                        if banks[bank_id].check_cds(cds_offers[bank_id].spread * loan.notional_amount)}
+                    # enter transactions
+                    for bank_id in cds_transactions:
+                        banks[cds_transactions[bank_id].buyer].assets['cds'].append(cds_transactions[bank_id])
+                        banks[cds_transactions[bank_id].seller].liabilities['cds'].append(cds_transactions[bank_id])
+                        logs.append(LogMessage(
+                            message=f'CDS sold from {cds_transactions[bank_id].seller} to '
+                                    f'{cds_transactions[bank_id].buyer} on {cds_transactions[bank_id].reference_entity}'
+                            ,
+                            time=t,
+                            data=cds_transactions[bank_id]
+                        ))
 
     # adjust production based on Credit Market & do the good consumption market
     overall_consumption = good_consumption[economy_state.current_state]
@@ -165,7 +149,24 @@ for t in range(T):
 
     # see which firms remain solvent
     defaulted_firms = [firms[firm_id].idx for firm_id in firms.keys() if firms[firm_id].check_default()]
-    #
+    # do payments for firms
+    for firm_id in firms.keys():
+        # decide how much money you have
+        loans = firms[firm_id].loans()
+        total_loans = sum([(1 + loan.interest_rate) * loan.notional_amount for loan in loans])
+        adjustment_factor = total_loans if firm_id not in defaulted_firms else firms[firm_id].equity
+        for loan in firms[firm_id].loans():
+            # payback
+            #TODO: this is not correct
+            banks[loan.lender].equity += ((1 + loan.interest_rate) * loan.notional_amount
+                                          * adjustment_factor / total_loans)
+
+        firms[firm_id].equity -= adjustment_factor
+
+
+    # do calculations for next period
+    # deposit shock
+    economy_state.get_next_state()
 
 
 

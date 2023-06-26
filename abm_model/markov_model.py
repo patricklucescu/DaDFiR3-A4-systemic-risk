@@ -13,7 +13,7 @@ class MarkovModel:
                 len(transition_matrix)), "Please give same length for transition matrix and states"
 
         self.starting_prob = starting_prob
-        self.transition_matrix = transition_matrix
+        self.transition_matrix = np.array(transition_matrix)
         self.states = states
         # generate initial state
         self.current_state = random.choices(population=list(self.states.keys()),
@@ -21,5 +21,5 @@ class MarkovModel:
 
     def get_next_state(self):
         self.current_state = random.choices(population=list(self.states.keys()),
-                                            weights=self.transition_matrix[self.current_state][0])
-        return self.states[self.current_state]
+                                            weights=self.transition_matrix[self.current_state])[0]
+        #return self.states[self.current_state]

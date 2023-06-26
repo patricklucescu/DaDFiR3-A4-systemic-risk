@@ -82,7 +82,7 @@ class Firm(BaseFirm):
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)
         self.equity += self.price * actual_consumption_percentage * self.supply
-        self.excess_supply = self.supply - actual_consumption_percentage * self.supply
+        self.excess_supply = (1 - actual_consumption_percentage) * self.supply
 
     def reset_variables(self):
         self.loans = []
