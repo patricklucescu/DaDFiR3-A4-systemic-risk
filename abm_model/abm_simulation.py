@@ -1,6 +1,8 @@
+from abm_model.credit_default_swap import CDS
 from abm_model.initialization import generate_random_firms_and_banks
 from abm_model.essentials import *
 from abm_model.logs import LogMessage
+from abm_model.return_evaluation import *
 from abm_model.credit_default_swap import CDS
 from abm_model.markov_model import MarkovModel
 import random
@@ -174,6 +176,11 @@ for t in range(T):
 
 
 
+    # end of period payoff-realization and bankruptcy evaluation
 
+    #firm liqduity/bankruptcy
+    #loan repayment incl. intersest rate
+    #cds payment
+    #bank defaults
 
-
+    historic_bank_equity = update_history(historic_bank_equity, banks, t)

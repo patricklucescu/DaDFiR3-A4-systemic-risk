@@ -45,8 +45,8 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     # create actual banks
     banks = {}
     capital_req = 0.9
-    bank_equity = [min(10000000/2, 10000000 * x) for x in np.random.poisson(4, len(banks_ids))]
-    bank_deposit = [x/y for x, y in zip(bank_equity, np.random.beta(a=2, b=3, size=len(banks_ids)))]
+    bank_equity = [max(10000000/2, 10000000 * x) for x in np.random.poisson(4, len(banks_ids))]
+    bank_deposit = [x/y for x, y in zip(bank_equity, np.random.beta(a=3, b=18, size=len(banks_ids)))]
     for i in range(len(banks_ids)):
         banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],

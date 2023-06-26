@@ -66,6 +66,11 @@ class Bank(BaseBank):
                 (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
                  sum([x.spread * x.notional_amount for x in self.assets['cds']])))
 
+    def check_cds(self, premium):
+        return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
+                (sum([x.notional_amount for x in self.assets['loans']]) +
+                 sum([x.spread * x.notional_amount for x in self.assets['cds']])) >= premium)
+
     def get_potential_interbank_loans(self, credit_needed, notional_amount):
         financial_fragility = (notional_amount + sum([x.notional_amount for x in self.assets['loans']])) / self.deposits
         return [Loan(lender=x, borrower=self.idx,
@@ -80,16 +85,11 @@ class Bank(BaseBank):
         else:
             return np.random.binomial(1, self.naked_cds_prob)
 
-    def provide_cds_spread(self, loan):
-        # add random noise to cds spread or use cds valuation method
-        cds_tax = self.cds_tax()
+    def provide_cds_spread(self,loan):
+        #add random noise to cds spread or use cds valuation method
+        cds_tax = self.cds_tax(loan)
         return loan.prob_default_borrower + cds_tax
 
-    # add cds tax function based on systemic risk
-    def cds_tax(self):
-        return np.random.uniform(-0.00999999, 0.04)
-
-    def check_cds(self, premium):
-        return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
-                (sum([x.notional_amount for x in self.assets['loans']]) +
-                 sum([x.spread * x.notional_amount for x in self.assets['cds']])) >= premium)
+    #add cds tax function based on systemic risk
+    def cds_tax(self, loan):
+        return np.random.uniform(-0.00999999,0.04)

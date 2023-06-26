@@ -6,6 +6,7 @@ class BaseAgent:
     bank_ids = None
     max_interbank_loan = None
     max_bank_loan = None
+    max_cds_requests = None
 
     @classmethod
     def change_policy_rate(cls, new_value):
