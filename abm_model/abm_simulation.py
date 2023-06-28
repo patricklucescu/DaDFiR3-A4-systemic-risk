@@ -1,9 +1,9 @@
-from abm_model.credit_default_swap import CDS
 from abm_model.initialization import generate_random_firms_and_banks
 from abm_model.essentials import *
 from abm_model.logs import LogMessage
 from abm_model.return_evaluation import *
 from abm_model.credit_default_swap import CDS
+from abm_model.loan import Loan
 from abm_model.markov_model import MarkovModel
 import random
 from numpy import random as npr
@@ -42,6 +42,8 @@ logs = []
 
 # begin the simulation part
 for t in range(T):
+    # define list of all interbank contracts made in this period
+    interbank_contracts = []
     # for each firm compute expected supply and see who wants loans
     for firm_id in firms.keys():
         firms[firm_id].compute_expected_supply_and_prices()
@@ -83,6 +85,7 @@ for t in range(T):
                 if len(interbank_loans) == 0:
                     continue
                 bank_loan = interbank_loans[0]
+                interbank_contracts.append(copy.deepcopy(bank_loan))
                 # extend the interbank loan
                 banks[bank_loan.lender].assets['loans'].append(bank_loan)
                 banks[bank_loan.borrower].liabilities['loans'].append(bank_loan)
@@ -131,6 +134,7 @@ for t in range(T):
                     for bank_id in cds_transactions:
                         banks[cds_transactions[bank_id].buyer].assets['cds'].append(cds_transactions[bank_id])
                         banks[cds_transactions[bank_id].seller].liabilities['cds'].append(cds_transactions[bank_id])
+                        interbank_contracts.append(cds_transactions[bank_id])
                         logs.append(LogMessage(
                             message=f'CDS sold from {cds_transactions[bank_id].seller} to '
                                     f'{cds_transactions[bank_id].buyer} on {cds_transactions[bank_id].reference_entity}'
@@ -159,11 +163,30 @@ for t in range(T):
         adjustment_factor = total_loans if firm_id not in defaulted_firms else firms[firm_id].equity
         for loan in firms[firm_id].loans():
             # payback
-            #TODO: this is not correct
-            banks[loan.lender].equity += ((1 + loan.interest_rate) * loan.notional_amount
+            banks[loan.lender].money_from_firm_loans += ((1 + loan.interest_rate) * loan.notional_amount
                                           * adjustment_factor / total_loans)
 
         firms[firm_id].equity -= adjustment_factor
+
+    # now figure out the banks network payments
+    banks_idx.sort(key=lambda idx: int(idx[5:]))
+    num_banks = len(banks_idx)
+    # create liability matrix
+    liabilities = np.zeros(shape=(num_banks, num_banks))
+    for contract in interbank_contracts:
+        if type(contract) == Loan:
+            buyer = banks_idx.index(contract.borrower)
+            seller = banks_idx.index(contract.seller)
+            liabilities[buyer, seller] += contract.notional_amount * (1 + contract.interest_rate)
+        else:
+            buyer = banks_idx.index(contract.buyer)
+            seller = banks_idx.index(contract.seller)
+            if contract.reference_entity in defaulted_firms:
+                liabilities[seller, buyer] += contract.notional_amount * (1 - contract.spread)
+            else:
+                liabilities[buyer, seller] += contract.spread * contract.notional_amount
+
+
 
 
     # do calculations for next period

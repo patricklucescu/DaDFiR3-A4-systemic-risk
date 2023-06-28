@@ -36,6 +36,7 @@ class Bank(BaseBank):
         self.max_credit = None
         self.assets = {'loans': [], 'cds': []}
         self.liabilities = {'loans': [], 'cds': []}
+        self.money_from_firm_loans = 0
 
     def update_max_credit(self):
         self.max_credit = self.deposits / self.capital_requirement
