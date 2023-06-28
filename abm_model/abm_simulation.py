@@ -35,7 +35,7 @@ economy_state = MarkovModel(starting_prob=starting_prob,
 good_consumption = [0.8, 0.6]
 good_consumption_std = [0.2, 0.3]
 min_consumption = 0.1
-max_consumption = 0.96
+max_consumption = 1
 
 # create logs
 logs = []
