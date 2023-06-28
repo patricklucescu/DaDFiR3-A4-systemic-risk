@@ -17,7 +17,7 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     base_agent.change_max_bank_loan(3)
     base_agent.change_max_interbank_loan(2)
     base_agent.change_max_cds_requests(3)
-    base_firm.change_market_price(10)
+    base_firm.change_market_price(700)
     base_firm.change_min_wage(200)
     base_bank.change_h_theta(0.1)
 

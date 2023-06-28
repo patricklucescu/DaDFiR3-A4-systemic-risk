@@ -39,6 +39,7 @@ max_consumption = 1
 
 # create logs
 logs = []
+historic_bank_equity = {}
 
 # begin the simulation part
 for t in range(T):
@@ -158,15 +159,17 @@ for t in range(T):
     # do payments for firms
     for firm_id in firms.keys():
         # decide how much money you have
-        loans = firms[firm_id].loans()
+        loans = firms[firm_id].loans
         total_loans = sum([(1 + loan.interest_rate) * loan.notional_amount for loan in loans])
         adjustment_factor = total_loans if firm_id not in defaulted_firms else firms[firm_id].equity
-        for loan in firms[firm_id].loans():
+        for loan in loans:
             # payback
             banks[loan.lender].money_from_firm_loans += ((1 + loan.interest_rate) * loan.notional_amount
                                           * adjustment_factor / total_loans)
 
         firms[firm_id].equity -= adjustment_factor
+        firms[firm_id].reset_variables()
+
 
     # now figure out the banks network payments
     banks_idx.sort(key=lambda idx: int(idx[5:]))
