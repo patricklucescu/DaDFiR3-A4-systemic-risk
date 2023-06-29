@@ -43,6 +43,7 @@ class Firm(BaseFirm):
         self.credit_demand = None
         self.financial_fragility = None
         self.potential_lenders = None
+        self.recovery_rate = None
 
     def compute_expected_supply_and_prices(self):
         """

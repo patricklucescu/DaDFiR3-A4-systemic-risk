@@ -18,7 +18,6 @@ class CDS:
         self.spread = spread
         self.tenor = tenor
         self.risk_free_rate = risk_free_rate
-        self.recovery_rate
 
 
     def update_spread(self, spread):

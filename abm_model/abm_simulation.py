@@ -66,21 +66,23 @@ for t in range(T):
                                                                          t)
 
     # Figure out firm default and update CDS recovery rate accordingly
-    firms, banks, defaulted_firms, interbank_contracts = clear_firm_default(firms,
-                                                                            banks,
-                                                                            interbank_contracts,
-                                                                            economy_state,
-                                                                            good_consumption,
-                                                                            good_consumption_std,
-                                                                            min_consumption,
-                                                                            max_consumption)
+    firms, banks, defaulted_firms = clear_firm_default(firms,
+                                                       banks,
+                                                       economy_state,
+                                                       good_consumption,
+                                                       good_consumption_std,
+                                                       min_consumption,
+                                                       max_consumption)
 
     # do deposit change
     for bank_id in banks_idx:
-        banks[bank_id].deposit_change = -10
+        rv = np.random.normal(0,1)/100
+        banks[bank_id].deposit_change = rv * banks[bank_id].deposits
+        banks[bank_id].deposits += banks[bank_id].deposit_change
+        # TODO: adjust the deposit variable
 
     # now figure out the banks network payments
-    banks = clear_interbank_market(banks, banks_idx, interbank_contracts, defaulted_firms)
+    banks = clear_interbank_market(banks, base_agent.bank_ids, interbank_contracts, defaulted_firms)
 
     # get defaulting banks
 

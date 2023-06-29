@@ -4,7 +4,6 @@ from abm_model.credit_default_swap import CDS
 
 def clear_firm_default(firms: dict,
                        banks: dict,
-                       interbank_contracts: list,
                        economy_state: MarkovModel,
                        good_consumption: list,
                        good_consumption_std: list,
@@ -15,7 +14,6 @@ def clear_firm_default(firms: dict,
 
     @param firms: Dictionary with all firms.
     @param banks: Dictionary with all banks.
-    @param interbank_contracts: List of all interbank contracts.
     @param economy_state: The economy state modelled as a Markov Model.
     @param good_consumption: Average good consumption for the different economy states.
     @param good_consumption_std: Standard deviation for the good consumption for the different economy states.
@@ -48,8 +46,6 @@ def clear_firm_default(firms: dict,
 
         firms[firm_id].equity -= adjustment_factor
         # now compute recovery rate for any cds written on the current firm
-        for contract in interbank_contracts:
-            if type(contract) == CDS and contract.reference_entity == firm_id:
-                contract.recovery_rate = adjustment_factor / total_loans
+        firms[firm_id].recovery_rate = adjustment_factor / total_loans
 
-    return firms, banks, defaulted_firms, interbank_contracts
+    return firms, banks, defaulted_firms
