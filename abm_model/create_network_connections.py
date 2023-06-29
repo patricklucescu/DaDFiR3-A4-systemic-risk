@@ -58,6 +58,7 @@ def create_network_connections(loan_offers: dict,
                 bank_loan = interbank_loans[0]
                 interbank_contracts.append(copy.deepcopy(bank_loan))
                 # extend the interbank loan
+                banks[bank_loan.lender].current_deposits -= bank_loan.notional_amount
                 banks[bank_loan.lender].assets['loans'].append(bank_loan)
                 banks[bank_loan.borrower].liabilities['loans'].append(bank_loan)
                 logs.append(LogMessage(
@@ -69,6 +70,7 @@ def create_network_connections(loan_offers: dict,
                 loan_extended = True
             if loan_extended:
                 banks[loan.lender].assets['loans'].append(loan)
+                banks[loan.lender].current_deposits -= loan.notional_amount
                 firms[loan.borrower].loans.append(loan)
                 firms[loan.borrower].equity += loan.notional_amount
                 logs.append(LogMessage(

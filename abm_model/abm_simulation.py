@@ -6,6 +6,7 @@ from abm_model.clear_interbank_market import clear_interbank_market
 from abm_model.clear_firm_default import clear_firm_default
 from abm_model.create_network_connections import create_network_connections
 import itertools
+import numpy as np
 
 # set up number of firms and banks and other parameters needed
 FIRMS = 100
@@ -50,6 +51,7 @@ for t in range(T):
                                                       for firm_id in firms.keys()])))
     loan_offers = []
     for bank_id in banks.keys():
+        banks[bank_id].update_current_deposits()
         banks[bank_id].update_max_credit()
         loan_offers += banks[bank_id].asses_loan_requests(loan_requests.get(bank_id, []))
     loan_offers = merge_dict([{loan.borrower: loan} for loan in loan_offers])

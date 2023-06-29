@@ -38,7 +38,11 @@ class Bank(BaseBank):
         self.liabilities = {'loans': [], 'cds': []}
         self.money_from_firm_loans = 0
         self.deposit_change = None
+        self.current_deposits = None
         self.earnings = None
+
+    def update_current_deposits(self):
+        self.current_deposits = self.deposits
 
     def update_max_credit(self):
         self.max_credit = self.deposits / self.capital_requirement
@@ -62,12 +66,10 @@ class Bank(BaseBank):
         return loan_offers
 
     def check_loan(self, loan):
-        if (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
-                sum([x.spread * x.notional_amount for x in self.assets['cds']]) > self.max_credit):
+        if loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) > self.max_credit:
             return False
         return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) -
-                (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) +
-                 sum([x.spread * x.notional_amount for x in self.assets['cds']])))
+                (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']])))
 
     def check_cds(self, premium):
         return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
@@ -91,7 +93,7 @@ class Bank(BaseBank):
     def provide_cds_spread(self, loan):
         """Implementation of the CDS Valuation of Hull for a one-period model."""
         R = 0.3
-        q = loan.prob_default_borrower + max(np.random.normal(0,0.01),10**5 - loan.prob_default_borrower)
+        q = loan.prob_default_borrower + max(np.random.normal(0,0.01), 10**5 - loan.prob_default_borrower)
         u = 1 / (1 + self.policy_rate)
         v = 1 / (1 + self.policy_rate)
         e = 1 / (1 + self.policy_rate)
