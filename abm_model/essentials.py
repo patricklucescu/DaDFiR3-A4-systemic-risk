@@ -39,9 +39,3 @@ def compute_expected_supply_price(excess_supply, prev_supply, prev_price, market
         price = prev_price
         supply = prev_supply * (1 + supply_adj()[0] * [-1 if statement_1 else 1][0])
     return price, supply
-
-
-def get_firm_consumption(min_consumption, max_consumption, overall_consumption, consumption_std):
-    return min(max(min_consumption, np.random.normal(overall_consumption, consumption_std)), max_consumption)
-
-
