@@ -39,6 +39,7 @@ max_consumption = 1
 
 # create logs
 logs = []
+historic_bank_equity = {}
 
 # begin the simulation part
 for t in range(T):
@@ -85,7 +86,7 @@ for t in range(T):
                 if len(interbank_loans) == 0:
                     continue
                 bank_loan = interbank_loans[0]
-                interbank_contracts.append(bank_loan)
+                interbank_contracts.append(copy.deepcopy(bank_loan))
                 # extend the interbank loan
                 banks[bank_loan.lender].assets['loans'].append(bank_loan)
                 banks[bank_loan.borrower].liabilities['loans'].append(bank_loan)
@@ -158,13 +159,14 @@ for t in range(T):
     # do payments for firms
     for firm_id in firms.keys():
         # decide how much money you have
-        loans = firms[firm_id].loans()
+        loans = firms[firm_id].loans
         total_loans = sum([(1 + loan.interest_rate) * loan.notional_amount for loan in loans])
         adjustment_factor = total_loans if firm_id not in defaulted_firms else firms[firm_id].equity
-        for loan in firms[firm_id].loans():
+        for loan in loans:
             # payback
             banks[loan.lender].money_from_firm_loans += ((1 + loan.interest_rate) * loan.notional_amount
                                           * adjustment_factor / total_loans)
+
         firms[firm_id].equity -= adjustment_factor
         # now compute recovery rate for any cds written on the current firm
         for contract in interbank_contracts:
