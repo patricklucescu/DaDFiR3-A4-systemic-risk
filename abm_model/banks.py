@@ -37,6 +37,7 @@ class Bank(BaseBank):
         self.assets = {'loans': [], 'cds': []}
         self.liabilities = {'loans': [], 'cds': []}
         self.money_from_firm_loans = 0
+        self.deposit_change = None
 
     def update_max_credit(self):
         self.max_credit = self.deposits / self.capital_requirement
@@ -86,11 +87,13 @@ class Bank(BaseBank):
         else:
             return np.random.binomial(1, self.naked_cds_prob)
 
-    def provide_cds_spread(self,loan):
-        #add random noise to cds spread or use cds valuation method
-        cds_tax = self.cds_tax(loan)
-        return loan.prob_default_borrower + cds_tax
-
-    #add cds tax function based on systemic risk
-    def cds_tax(self, loan):
-        return np.random.uniform(-0.00999999,0.04)
+    def provide_cds_spread(self, loan):
+        """Implementation of the CDS Valuation of Hull for a one-period model."""
+        R = 0.3
+        q = loan.prob_default_borrower + max(np.random.normal(0,0.01),10**5 - loan.prob_default_borrower)
+        u = 1 / (1 + self.policy_rate)
+        v = 1 / (1 + self.policy_rate)
+        e = 1 / (1 + self.policy_rate)
+        A = loan.interest_rate
+        pi = 1 - q
+        return (1 - R - A * R) * q * v / (q * (u + e) + pi * u)

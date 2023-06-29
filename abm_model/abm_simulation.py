@@ -85,7 +85,7 @@ for t in range(T):
                 if len(interbank_loans) == 0:
                     continue
                 bank_loan = interbank_loans[0]
-                interbank_contracts.append(copy.deepcopy(bank_loan))
+                interbank_contracts.append(bank_loan)
                 # extend the interbank loan
                 banks[bank_loan.lender].assets['loans'].append(bank_loan)
                 banks[bank_loan.borrower].liabilities['loans'].append(bank_loan)
@@ -165,8 +165,15 @@ for t in range(T):
             # payback
             banks[loan.lender].money_from_firm_loans += ((1 + loan.interest_rate) * loan.notional_amount
                                           * adjustment_factor / total_loans)
-
         firms[firm_id].equity -= adjustment_factor
+        # now compute recovery rate for any cds written on the current firm
+        for contract in interbank_contracts:
+            if type(contract) == CDS and contract.reference_entity == firm_id:
+                contract.recovery_rate = adjustment_factor / total_loans
+
+    # do deposit change
+    for bank_id in banks_idx:
+        banks[bank_id].deposit_change = -10
 
     # now figure out the banks network payments
     banks_idx.sort(key=lambda idx: int(idx[5:]))
@@ -182,10 +189,9 @@ for t in range(T):
             buyer = banks_idx.index(contract.buyer)
             seller = banks_idx.index(contract.seller)
             if contract.reference_entity in defaulted_firms:
-                liabilities[seller, buyer] += contract.notional_amount * (1 - contract.spread)
+                liabilities[seller, buyer] += contract.notional_amount * (1 - contract.recovery_rate - contract.spread)
             else:
                 liabilities[buyer, seller] += contract.spread * contract.notional_amount
-
 
 
 
