@@ -84,7 +84,7 @@ for t in range(T):
         # TODO: adjust the deposit variable
 
     # now figure out the banks network payments
-    banks = clear_interbank_market(banks, base_agent.bank_ids, interbank_contracts, defaulted_firms)
+    banks = clear_interbank_market(banks, firms, base_agent.bank_ids, interbank_contracts, defaulted_firms)
 
     # get defaulting banks
 

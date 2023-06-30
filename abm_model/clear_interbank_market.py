@@ -33,7 +33,7 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
     # TODO: something is wrong here, how to adjust initial wealth: we only shift liabilities
     #  but i could save other banks by using deposits
     initial_wealth = np.array([banks[idx].equity + banks[idx].money_from_firm_loans +
-                               min([banks[idx].deposit_chage, 0]) for idx in banks_idx])
+                               min([banks[idx].deposit_change, 0]) for idx in banks_idx])
     while default:
         wealth = initial_wealth + np.matmul(Pi.T, payments)
         old_payments = payments.copy()
@@ -43,7 +43,7 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
             default = False
     # now do the payments
     for bank_id, index in zip(banks_idx, range(len(banks_idx))):
-        banks[bank_id].earnings = (banks[bank_id].money_from_firm_loans + banks[bank_id].deposit_chage +
+        banks[bank_id].earnings = (banks[bank_id].money_from_firm_loans + banks[bank_id].deposit_change +
                                   np.matmul(Pi.T, payments)[index] - payments[index])
 
     # see what each banks owns to its depositors
