@@ -131,10 +131,10 @@ for t in range(T):
 
     # do calculations for next period
 
-    #economy_state.get_next_state()
+    economy_state.get_next_state()
 
 
 
 
 
-    #historic_bank_equity = update_history(historic_bank_equity, banks, t)
+    historic_bank_equity = update_history(historic_bank_equity, banks, t)
