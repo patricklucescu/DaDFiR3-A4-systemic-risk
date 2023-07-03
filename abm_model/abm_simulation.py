@@ -1,4 +1,4 @@
-from abm_model.initialization import generate_random_firms_and_banks
+from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
 from abm_model.essentials import merge_dict
 from abm_model.return_evaluation import *
 from abm_model.markov_model import MarkovModel
@@ -12,7 +12,7 @@ import numpy as np
 # set up number of firms and banks and other parameters needed
 FIRMS = 100
 BANKS = 10
-T = 10
+T = 1
 covered_cds_prob = 0.8
 naked_cds_prob = 0.2
 
@@ -110,7 +110,7 @@ for t in range(T):
     # reset banks and firms and remove defaulting ones
 
     banks = {bank_id: bank_entity for bank_id, bank_entity in banks.items() if bank_id not in defaulted_banks}
-    firms = {firm_id: firm_entity for firm_id, firm_entity in banks.items() if firm_id not in defaulted_firms}
+    firms = {firm_id: firm_entity for firm_id, firm_entity in firms.items() if firm_id not in defaulted_firms}
     for bank_id in banks:
         banks[bank_id].reset_variables()
     for firm_id in firms:
@@ -121,17 +121,20 @@ for t in range(T):
     max_id_bank = max([int(firm_id[5:]) for firm_id in base_agent.bank_ids])
     new_firm_ids = [f'firm_{x}' for x in range(max_id_firm + 1, max_id_firm + 1 + len(defaulted_firms))]
     new_bank_ids = [f'bank_{x}' for x in range(max_id_bank + 1, max_id_bank + 1 + len(defaulted_banks))]
-
+    firms, banks = generate_new_entities(new_bank_ids,
+                                         new_firm_ids,
+                                         banks,
+                                         firms,
+                                         base_firm,
+                                         covered_cds_prob,
+                                         naked_cds_prob)
 
     # do calculations for next period
-    # deposit shock
-    economy_state.get_next_state()
 
-    # end of period payoff-realization and bankruptcy evaluation
+    #economy_state.get_next_state()
 
-    # firm liqduity/bankruptcy
-    # loan repayment incl. intersest rate
-    # cds payment
-    # bank defaults
 
-    historic_bank_equity = update_history(historic_bank_equity, banks, t)
+
+
+
+    #historic_bank_equity = update_history(historic_bank_equity, banks, t)

@@ -23,11 +23,12 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
 
     # create actual firms
     firms = {}
-    firm_equity = [max(1000 * x,100) for x in np.random.poisson(4, len(firms_ids))]
+    firm_equity = [max(1000 * x, 100) for x in np.random.poisson(4, len(firms_ids))]
     productivity = [0.3] * len(firms_ids)
     excess_supply = [100 * x for x in np.random.poisson(4, len(firms_ids))]
     supply = [max(400 * x, 70) for x in np.random.poisson(4, len(firms_ids))]
-    price = [base_firm.market_price + np.random.normal(0, 0.3) for x in range(len(firms_ids))]
+    price = [max(base_firm.market_price + np.random.normal(0, 0.3), base_firm.market_price/2)
+             for x in range(len(firms_ids))]
     wage = [base_firm.min_wage + np.random.exponential(4) for x in range(len(firms_ids))]
     default_probability = [max(x, 0.01) for x in np.random.beta(a=1.9, b=8, size=len(firms_ids))]
     for i in range(len(firms_ids)):
@@ -45,8 +46,8 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     # create actual banks
     banks = {}
     capital_req = 0.9
-    bank_equity = [max(10000000/2, 10000000 * x) for x in np.random.poisson(4, len(banks_ids))]
-    bank_deposit = [x/y for x, y in zip(bank_equity, np.random.beta(a=3, b=18, size=len(banks_ids)))]
+    bank_equity = [max(10000000 / 2, 10000000 * x) for x in np.random.poisson(4, len(banks_ids))]
+    bank_deposit = [x / y for x, y in zip(bank_equity, np.random.beta(a=3, b=18, size=len(banks_ids)))]
     for i in range(len(banks_ids)):
         banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],
@@ -57,5 +58,59 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     return firms, banks, base_agent, base_firm, base_bank
 
 
-def generate_new_firms(num_firms, num_banks, banks, firms):
-    return
+def generate_new_entities(new_bank_ids, new_firm_ids, banks, firms, base_firm, covered_cds_prob, naked_cds_prob):
+    # for banks generation
+    capital_req = 0.9
+    average_equity = np.mean([banks[bank_id].equity for bank_id in banks.keys()])
+    std_equity = np.std([banks[bank_id].equity for bank_id in banks.keys()])
+    average_deposit = np.mean([banks[bank_id].deposits for bank_id in banks.keys()])
+    std_deposit = np.std([banks[bank_id].deposits for bank_id in banks.keys()])
+    bank_equity = list(np.random.normal(average_equity, std_equity, len(new_bank_ids)))
+    bank_deposit = list(np.random.normal(average_deposit, std_deposit, len(new_bank_ids)))
+    for i, bank_id in enumerate(new_bank_ids):
+        banks[bank_id] = Bank(idx=bank_id,
+                              equity=bank_equity[i],
+                              deposits=bank_deposit[i],
+                              capital_requirement=capital_req,
+                              covered_cds_prob=covered_cds_prob,
+                              naked_cds_prob=naked_cds_prob)
+    # for firm generation
+    average_supply = np.mean([firms[firm_id].supply for firm_id in firms.keys()])
+    std_supply = np.std([firms[firm_id].supply for firm_id in firms.keys()])
+    average_ex_supply = np.mean([firms[firm_id].excess_supply for firm_id in firms.keys()])
+    std_ex_supply = np.std([firms[firm_id].excess_supply for firm_id in firms.keys()])
+    average_price = np.mean([firms[firm_id].price for firm_id in firms.keys()])
+    std_price = np.std([firms[firm_id].price for firm_id in firms.keys()])
+    average_wage = np.mean([firms[firm_id].wage for firm_id in firms.keys()])
+    std_wage = np.std([firms[firm_id].wage for firm_id in firms.keys()])
+    average_firm_equity = np.mean([firms[firm_id].equity for firm_id in firms.keys()])
+    std_firm_equity = np.std([firms[firm_id].equity for firm_id in firms.keys()])
+    average_productivity = np.mean([firms[firm_id].productivity for firm_id in firms.keys()])
+    std_productivity = np.std([firms[firm_id].productivity for firm_id in firms.keys()])
+    average_default_prob = np.mean([firms[firm_id].default_probability for firm_id in firms.keys()])
+    std_default_prob = np.std([firms[firm_id].default_probability for firm_id in firms.keys()])
+    supply = [max(x, 70) for x in np.random.normal(average_equity, std_equity, len(new_firm_ids))]
+    excess_supply = [max(x, 0) for x in np.random.normal(average_ex_supply, std_ex_supply, len(new_firm_ids))]
+    price = [max(x, base_firm.market_price / 2) for x in np.random.normal(average_price, std_price, len(new_firm_ids))]
+    wage = [max(x, base_firm.min_wage) for x in np.random.normal(average_wage, std_wage, len(new_firm_ids))]
+    firm_equity = [max(x, 100) for x in np.random.normal(average_firm_equity, std_firm_equity, len(new_firm_ids))]
+    default_probability = [max(x, 0.01) for x in np.random.normal(average_default_prob, std_default_prob,
+                                                                  len(new_firm_ids))]
+    productivity = [0.3] * len(new_firm_ids)
+    for i, firm_id in enumerate(new_firm_ids):
+        firms[firm_id] = Firm(
+            idx=firm_id,
+            supply=supply[i],
+            excess_supply=excess_supply[i],
+            price=price[i],
+            wage=wage[i],
+            equity=firm_equity[i],
+            productivity=productivity[i],
+            default_probability=default_probability[i]
+        )
+    return firms, banks
+
+
+def do(base_agent):
+    base_agent.change_policy_rate(5)
+    return base_agent
