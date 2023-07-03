@@ -100,3 +100,12 @@ class Bank(BaseBank):
         A = loan.interest_rate
         pi = 1 - q
         return (1 - R - A * R) * q * v / (q * (u + e) + pi * u)
+
+    def reset_variables(self):
+        self.max_credit = None
+        self.assets = {'loans': [], 'cds': []}
+        self.liabilities = {'loans': [], 'cds': []}
+        self.money_from_firm_loans = 0
+        self.deposit_change = None
+        self.current_deposits = None
+        self.earnings = None

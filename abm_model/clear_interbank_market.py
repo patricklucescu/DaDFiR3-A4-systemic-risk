@@ -33,7 +33,7 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
     # TODO: something is wrong here, how to adjust initial wealth: we only shift liabilities
     #  but i could save other banks by using deposits
     initial_wealth = np.array([banks[idx].equity + banks[idx].money_from_firm_loans +
-                               min([banks[idx].deposit_chage, 0]) for idx in banks_idx])
+                               min([banks[idx].deposit_change, 0]) for idx in banks_idx])
     while default:
         wealth = initial_wealth + np.matmul(Pi.T, payments)
         old_payments = payments.copy()
@@ -43,9 +43,24 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
             default = False
     # now do the payments
     for bank_id, index in zip(banks_idx, range(len(banks_idx))):
-        banks[bank_id].earnings = (banks[bank_id].money_from_firm_loans + banks[bank_id].deposit_chage +
-                                  np.matmul(Pi.T, payments)[index] - payments[index])
+        banks[bank_id].earnings = (banks[bank_id].equity + banks[bank_id].money_from_firm_loans +
+                                   min([banks[bank_id].deposit_change, 0]) + np.matmul(Pi.T, payments)[index]
+                                   - payments[index])
 
-    # see what each banks owns to its depositors
-    # deposits - current_deposits -> this is what you have to transfer to the deposits account from equity
-    return banks, defaulting_banks
+    # check defaulting banks now
+    defaulted_banks = [banks_idx[idx] for idx in default_set]
+    for bank_id in banks_idx:
+        money_for_deposits = banks[bank_id].deposits - banks[bank_id].current_deposits
+        if bank_id in defaulted_banks or banks[bank_id].earnings < money_for_deposits:
+            #  bank is in default
+            defaulted_banks.append(bank_id)
+            banks[bank_id].equity = 0
+            banks[bank_id].current_deposits += banks[bank_id].earnings
+            banks[bank_id].deposits = banks[bank_id].current_deposits
+        else:
+            #  bank is not in default
+            banks[bank_id].current_deposits += money_for_deposits
+            banks[bank_id].deposits = banks[bank_id].current_deposits
+            banks[bank_id].equity = banks[bank_id].earnings - money_for_deposits
+    defaulted_banks = list(np.array(defaulted_banks))
+    return banks, defaulted_banks

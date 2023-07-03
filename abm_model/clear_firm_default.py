@@ -1,5 +1,6 @@
 from abm_model.markov_model import MarkovModel
 from abm_model.credit_default_swap import CDS
+from abm_model.baseclass import BaseAgent
 
 
 def clear_firm_default(firms: dict,
@@ -32,6 +33,8 @@ def clear_firm_default(firms: dict,
                                                   max_consumption,
                                                   overall_consumption,
                                                   consumption_std)
+    # compute market price
+
     # see which firms remain solvent
     defaulted_firms = [firms[firm_id].idx for firm_id in firms.keys() if firms[firm_id].check_default()]
     # clear firm loan payments and update cds with recovery rate
