@@ -91,6 +91,7 @@ class Firm(BaseFirm):
         self.credit_demand = None
         self.financial_fragility = None
         self.potential_lenders = None
+        self.recovery_rate = None
 
     def check_default(self):
         if self.equity < sum([(1+loan.interest_rate) * loan.notional_amount for loan in self.loans]):

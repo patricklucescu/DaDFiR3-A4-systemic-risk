@@ -12,7 +12,7 @@ import numpy as np
 # set up number of firms and banks and other parameters needed
 FIRMS = 100
 BANKS = 10
-T = 1
+T = 10
 covered_cds_prob = 0.8
 naked_cds_prob = 0.2
 
@@ -31,7 +31,7 @@ economy_state = MarkovModel(starting_prob=starting_prob,
                             states=states)
 
 # good consumption based on economy state
-good_consumption = [0.4, 0.6]
+good_consumption = [0.8, 0.6]
 good_consumption_std = [0.2, 0.3]
 min_consumption = 0.1
 max_consumption = 1
@@ -122,8 +122,8 @@ for t in range(T):
 
 
     # create new bank entities and update the bank and firm ids list in the base agent
-    max_id_firm = max([int(bank_id[5:]) for bank_id in base_agent.firm_ids])
-    max_id_bank = max([int(firm_id[5:]) for firm_id in base_agent.bank_ids])
+    max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
+    max_id_bank = max([int(bank_id[5:]) for bank_id in base_agent.bank_ids])
     new_firm_ids = [f'firm_{x}' for x in range(max_id_firm + 1, max_id_firm + 1 + len(defaulted_firms))]
     new_bank_ids = [f'bank_{x}' for x in range(max_id_bank + 1, max_id_bank + 1 + len(defaulted_banks))]
     firms, banks = generate_new_entities(new_bank_ids,
@@ -134,12 +134,18 @@ for t in range(T):
                                          covered_cds_prob,
                                          naked_cds_prob)
 
+    #update base agent for new IDs
+    updated_firm_ids = [firm_id for firm_id in (base_agent.firm_ids + new_firm_ids) if firm_id not in defaulted_firms]
+    updated_bank_ids = [bank_id for bank_id in (base_agent.bank_ids + new_bank_ids) if bank_id not in defaulted_banks]
+    base_agent.change_firm_ids(updated_firm_ids)
+    base_agent.change_bank_ids(updated_bank_ids)
+
     # do calculations for next period
 
     economy_state.get_next_state()
 
-
-
-
-
+    print(f'time: {t} out of {T-1}')
+    print(f'economy state: {economy_state.current_state}')
+    print(f'defaulted banks: {defaulted_banks}')
+    print(f'market price: {base_firm.market_price}')
     historic_bank_equity = update_history(historic_bank_equity, banks, t)

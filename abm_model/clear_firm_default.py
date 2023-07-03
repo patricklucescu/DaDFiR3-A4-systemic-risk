@@ -48,7 +48,9 @@ def clear_firm_default(firms: dict,
                                                          * adjustment_factor / total_loans)
 
         firms[firm_id].equity -= adjustment_factor
-        # now compute recovery rate for any cds written on the current firm
-        firms[firm_id].recovery_rate = adjustment_factor / total_loans
+        # now compute recovery rate for any cds written on the current firm, given firm does have a loan
+        # ...recovery rate not needed otherwise. Reset at end of period not to carry over the recovery rate
+        if len(loans) > 0:
+            firms[firm_id].recovery_rate = adjustment_factor / total_loans
 
     return firms, banks, defaulted_firms
