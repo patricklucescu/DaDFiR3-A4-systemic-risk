@@ -46,8 +46,6 @@ for t in range(T):
     for firm_id in firms.keys():
         firms[firm_id].compute_expected_supply_and_prices()
         firms[firm_id].check_loan_desire_and_choose_loans()
-    # compute market price
-    base_firm.change_market_price(np.mean([firm.price for _, firm in firms.items()]))
 
     # iterate through banks and see which ones accept the loans
     loan_requests = merge_dict(list(itertools.chain(*[[{loan.lender: loan} for loan in firms[firm_id].potential_lenders]
@@ -69,6 +67,10 @@ for t in range(T):
                                                                          covered_cds_prob,
                                                                          naked_cds_prob,
                                                                          t)
+
+    # compute market price
+    base_firm.change_market_price(sum([firm.price * firm.supply for _, firm in firms.items()]) / sum([firm.supply for _, firm in firms.items()]))
+
 
     # Figure out firm default and update CDS recovery rate accordingly
     firms, banks, defaulted_firms = clear_firm_default(firms,
@@ -115,6 +117,9 @@ for t in range(T):
         banks[bank_id].reset_variables()
     for firm_id in firms:
         firms[firm_id].reset_variables()
+
+
+
 
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(bank_id[5:]) for bank_id in base_agent.firm_ids])

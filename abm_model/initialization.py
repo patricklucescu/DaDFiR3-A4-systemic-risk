@@ -89,7 +89,7 @@ def generate_new_entities(new_bank_ids, new_firm_ids, banks, firms, base_firm, c
     std_productivity = np.std([firms[firm_id].productivity for firm_id in firms.keys()])
     average_default_prob = np.mean([firms[firm_id].default_probability for firm_id in firms.keys()])
     std_default_prob = np.std([firms[firm_id].default_probability for firm_id in firms.keys()])
-    supply = [max(x, 70) for x in np.random.normal(average_equity, std_equity, len(new_firm_ids))]
+    supply = [max(x, 70) for x in np.random.normal(average_supply, std_supply, len(new_firm_ids))]
     excess_supply = [max(x, 0) for x in np.random.normal(average_ex_supply, std_ex_supply, len(new_firm_ids))]
     price = [max(x, base_firm.market_price / 2) for x in np.random.normal(average_price, std_price, len(new_firm_ids))]
     wage = [max(x, base_firm.min_wage) for x in np.random.normal(average_wage, std_wage, len(new_firm_ids))]
