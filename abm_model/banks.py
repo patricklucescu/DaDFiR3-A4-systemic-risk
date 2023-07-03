@@ -71,6 +71,7 @@ class Bank(BaseBank):
         return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) -
                 (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']])))
 
+    #TODO: function check_cds not correct yet
     def check_cds(self, premium):
         return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
                 (sum([x.notional_amount for x in self.assets['loans']]) +
@@ -93,9 +94,12 @@ class Bank(BaseBank):
     def provide_cds_spread(self, loan):
         """Implementation of the CDS Valuation of Hull for a one-period model."""
         R = 0.3
+        #I don't know how exactly you want to implement the noise term, but like this it always results
+        # in a default probability of ~10^5, yielding spreads of 0.7 (=> 1-R). Maybe you just mean 10**(-5)?
         q = loan.prob_default_borrower + max(np.random.normal(0,0.01), 10**5 - loan.prob_default_borrower)
         u = 1 / (1 + self.policy_rate)
         v = 1 / (1 + self.policy_rate)
+        # I think e=0, we do not have any accrual payments, no?
         e = 1 / (1 + self.policy_rate)
         A = loan.interest_rate
         pi = 1 - q

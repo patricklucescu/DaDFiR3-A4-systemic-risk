@@ -18,11 +18,13 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
         else:
             buyer = banks_idx.index(contract.buyer)
             seller = banks_idx.index(contract.seller)
+            #I think netting-out the spread is wrong. It is part of the liability matrix and adds to the total payment vector
+            # ... Also, if recovery_rate is very close to 1, s.t. 1-R-spread < 0, you add negative entries to the liability matrix
+            # ... which should not happen.
             if contract.reference_entity in defaulted_firms:
                 liabilities[seller, buyer] += (contract.notional_amount *
-                                               (1 - firms[contract.reference_entity].recovery_rate - contract.spread))
-            else:
-                liabilities[buyer, seller] += contract.spread * contract.notional_amount
+                                               (1 - firms[contract.reference_entity].recovery_rate))
+            liabilities[buyer, seller] += contract.spread * contract.notional_amount
 
     Lbar = np.sum(liabilities, axis=1)
     Pi = np.matmul(np.diag(1 / Lbar), liabilities)
