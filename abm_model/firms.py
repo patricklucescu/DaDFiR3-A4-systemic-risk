@@ -53,7 +53,9 @@ class Firm(BaseFirm):
         self.price, self.supply = compute_expected_supply_price(self.excess_supply,
                                                                 self.supply,
                                                                 self.price,
-                                                                self.market_price)
+                                                                self.market_price,
+                                                                self.wage,
+                                                                self.productivity)
         self.total_wages = self.wage * self.supply / self.productivity
 
     def check_loan_desire_and_choose_loans(self):
