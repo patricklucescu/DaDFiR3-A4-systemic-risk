@@ -8,7 +8,12 @@ max_increase_quantity = 0.1
 
 
 def merge_dict(list_dict):
-    """Merge list of dictionaries into a single one by aggregating values into lists."""
+    """
+    | Merge list of dictionaries into a single one by aggregating values into lists.
+
+    @param list_dict: List of dictionaries to be merged
+    @return: The merged dictionary
+    """
     out_dict = defaultdict(list)
     for d in list_dict:
         for key, value in d.items():
@@ -20,14 +25,40 @@ def wages_adj():
 
 
 def price_adj():
+    """
+    | Helper function to generate randomness in adjusting the firm price.
+
+    @return: Random number
+    """
     return np.random.uniform(0, max_increase_prices, 1)
 
 
 def supply_adj():
+    """
+    | Helper function to generate randomness in adjusting the firm supply.
+
+    @return: Random number
+    """
     return np.random.uniform(0, max_increase_quantity, 1)
 
 
-def compute_expected_supply_price(excess_supply, prev_supply, prev_price, market_price, wage, productivity):
+def compute_expected_supply_price(excess_supply: float,
+                                  prev_supply: float,
+                                  prev_price: float,
+                                  market_price: float,
+                                  wage: float,
+                                  productivity: float):
+    """
+    | Compute expected supply and price based on the book Macroeconomics from Bottom-up by Gatti et al. (2011)  page 55.
+
+    @param excess_supply: Previous period excess supply
+    @param prev_supply: Previous period supply
+    @param prev_price: Previous period price
+    @param market_price: Previous period market price
+    @param wage: Current wage
+    @param productivity: Current firm productivity
+    @return: price and supply for current period
+    """
     statement_1 = (excess_supply > 0 and prev_price >= market_price)
     statement_2 = (excess_supply == 0 and prev_price < market_price)
     statement_3 = (excess_supply > 0 and prev_price < market_price)
