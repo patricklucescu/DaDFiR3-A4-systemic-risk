@@ -37,5 +37,5 @@ def compute_expected_supply_price(excess_supply, prev_supply, prev_price, market
         price = prev_price * (1 + price_adj()[0] * [-1 if statement_1 else 1][0])
     else:
         price = prev_price
-        supply = prev_supply * (1 + supply_adj()[0] * [-1 if statement_1 else 1][0])
+        supply = prev_supply * (1 + supply_adj()[0] * [-1 if statement_3 else 1][0])
     return price, supply

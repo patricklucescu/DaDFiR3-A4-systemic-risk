@@ -2,7 +2,7 @@ import time
 
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
 from abm_model.essentials import merge_dict
-from abm_model.return_evaluation import *
+from abm_model.analytics import *
 from abm_model.markov_model import MarkovModel
 from abm_model.clear_interbank_market import clear_interbank_market
 from abm_model.clear_firm_default import clear_firm_default
@@ -12,8 +12,8 @@ import itertools
 import numpy as np
 
 # set up number of firms and banks and other parameters needed
-FIRMS = 1000
-BANKS = 50
+FIRMS = 100
+BANKS = 10
 T = 10
 covered_cds_prob = 0.8
 naked_cds_prob = 0.1
@@ -151,10 +151,11 @@ for t in range(T):
 
     economy_state.get_next_state()
 
-    #print(f'time: {t} out of {T-1}')
-    #print(f'economy state: {economy_state.current_state}')
-    #print(f'defaulted banks: {defaulted_banks}')
-    #print(f'market price: {base_firm.market_price}')
+    print(f'time: {t} out of {T-1}')
+    print(f'economy state: {economy_state.current_state}')
+    print(f'defaulted banks: {defaulted_banks}')
+    print(f'market price: {base_firm.market_price}')
+
     historic_bank_equity = update_history(historic_bank_equity, banks, t)
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")

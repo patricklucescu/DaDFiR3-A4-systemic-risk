@@ -96,7 +96,7 @@ class Bank(BaseBank):
         R = 0.3
         #I don't know how exactly you want to implement the noise term, but like this it always results
         # in a default probability of ~10^5, yielding spreads of 0.7 (=> 1-R). Maybe you just mean 10**(-5)?
-        q = loan.prob_default_borrower + max(np.random.normal(0,0.01), 10**5 - loan.prob_default_borrower)
+        q = loan.prob_default_borrower + max(np.random.normal(0,0.01), 10**(-2) - loan.prob_default_borrower)
         u = 1 / (1 + self.policy_rate)
         v = 1 / (1 + self.policy_rate)
         # I think e=0, we do not have any accrual payments, no?
