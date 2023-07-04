@@ -1,3 +1,5 @@
+import time
+
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
 from abm_model.essentials import merge_dict
 from abm_model.return_evaluation import *
@@ -10,11 +12,11 @@ import itertools
 import numpy as np
 
 # set up number of firms and banks and other parameters needed
-FIRMS = 100
-BANKS = 10
+FIRMS = 1000
+BANKS = 50
 T = 10
 covered_cds_prob = 0.8
-naked_cds_prob = 0.2
+naked_cds_prob = 0.1
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
@@ -31,7 +33,7 @@ economy_state = MarkovModel(starting_prob=starting_prob,
                             states=states)
 
 # good consumption based on economy state
-good_consumption = [0.8, 0.6]
+good_consumption = [0.8, 0.4]
 good_consumption_std = [0.2, 0.3]
 min_consumption = 0.1
 max_consumption = 1
@@ -42,7 +44,9 @@ historic_bank_equity = {}
 
 # begin the simulation part
 for t in range(T):
+    start = time.time()
     # for each firm compute expected supply and see who wants loans
+    print(f"Period {t}: Compute expected supply and price")
     for firm_id in firms.keys():
         firms[firm_id].compute_expected_supply_and_prices()
         firms[firm_id].check_loan_desire_and_choose_loans()
@@ -59,6 +63,7 @@ for t in range(T):
     loan_offers = {firm_id: sorted(loan_offers[firm_id], key=lambda y: y.interest_rate) for firm_id in loan_offers}
 
     # start the network allocation of loans and cds
+    print(f"Period {t}: Create network connections")
     firms, banks, interbank_contracts, logs = create_network_connections(loan_offers,
                                                                          banks,
                                                                          firms,
@@ -73,6 +78,7 @@ for t in range(T):
 
 
     # Figure out firm default and update CDS recovery rate accordingly
+    print(f"Period {t}: Get defaulting firms")
     firms, banks, defaulted_firms = clear_firm_default(firms,
                                                        banks,
                                                        economy_state,
@@ -89,6 +95,7 @@ for t in range(T):
         # TODO: adjust the deposit variable
 
     # now figure out the banks network payments
+    print(f"Period {t}: Get defaulting banks")
     banks, defaulted_banks = clear_interbank_market(banks,
                                                     firms,
                                                     base_agent.bank_ids,
@@ -144,8 +151,10 @@ for t in range(T):
 
     economy_state.get_next_state()
 
-    print(f'time: {t} out of {T-1}')
-    print(f'economy state: {economy_state.current_state}')
-    print(f'defaulted banks: {defaulted_banks}')
-    print(f'market price: {base_firm.market_price}')
+    #print(f'time: {t} out of {T-1}')
+    #print(f'economy state: {economy_state.current_state}')
+    #print(f'defaulted banks: {defaulted_banks}')
+    #print(f'market price: {base_firm.market_price}')
     historic_bank_equity = update_history(historic_bank_equity, banks, t)
+    end = time.time()
+    print(f"Period {t} finished in {(end-start)/60} minutes")
