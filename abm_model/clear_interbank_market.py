@@ -53,6 +53,7 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
     defaulted_banks = [banks_idx[idx] for idx in default_set]
     for bank_id in banks_idx:
         money_for_deposits = banks[bank_id].deposits - banks[bank_id].current_deposits
+        #TODO: we reappend banks in defaulted_banks to defaulted_banks. we need to take unique values afterwards
         if bank_id in defaulted_banks or banks[bank_id].earnings < money_for_deposits:
             #  bank is in default
             defaulted_banks.append(bank_id)
