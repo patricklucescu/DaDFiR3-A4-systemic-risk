@@ -13,11 +13,11 @@ def generate_random_firms_and_banks(firms_ids: list,
     """
     | Generates random firms and banks based on the given firm and bank IDs.
 
-    :param firms_ids: A list of firm IDs
-    :param banks_ids: A list of bank IDs
-    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used
-    :param naked_cds_prob: The probability of a naked CDS being used
-    :return: A tuple containing the generated firms, banks, base agent, base firm, and base bank
+    :param firms_ids: A list of firm IDs.
+    :param banks_ids: A list of bank IDs.
+    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used.
+    :param naked_cds_prob: The probability of a naked CDS being used.
+    :return: A tuple containing the generated firms, banks, base agent, base firm, and base bank.
     """
     # base agent, base bank and base firm
     base_agent = BaseAgent()
@@ -80,14 +80,14 @@ def generate_new_entities(new_bank_ids: list,
     """
     | Generates new banks and firms based on the given new bank and firm IDs.
 
-    :param new_bank_ids: A list of new bank IDs
-    :param new_firm_ids: A list of new firm IDs
-    :param banks: A dictionary of existing banks
-    :param firms: A dictionary of existing firms
-    :param base_firm: The base firm object
-    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used
-    :param naked_cds_prob: The probability of a naked CDS being used
-    :return: A tuple containing the updated firms and banks
+    :param new_bank_ids: A list of new bank IDs.
+    :param new_firm_ids: A list of new firm IDs.
+    :param banks: A dictionary of existing banks.
+    :param firms: A dictionary of existing firms.
+    :param base_firm: The base firm object.
+    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used.
+    :param naked_cds_prob: The probability of a naked CDS being used.
+    :return: A tuple containing the updated firms and banks.
     """
     # for banks generation
     capital_req = 0.9

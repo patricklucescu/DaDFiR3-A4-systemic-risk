@@ -14,12 +14,12 @@ class Loan:
         """
         | Set up the characteristics of a loan.
 
-        :param lender: The lender of the loan
-        :param borrower: The borrower of the loan
-        :param notional_amount: The notional amount of the loan
-        :param financial_fragility_borrower: The financial fragility of the borrower
-        :param prob_default_borrower: The default probability of the borrower
-        :param interest_rate: The loan interest rate that the borrower has to pay
+        :param lender: The lender of the loan.
+        :param borrower: The borrower of the loan.
+        :param notional_amount: The notional amount of the loan.
+        :param financial_fragility_borrower: The financial fragility of the borrower.
+        :param prob_default_borrower: The default probability of the borrower.
+        :param interest_rate: The loan interest rate that the borrower has to pay.
         """
         self.lender = lender
         self.borrower = borrower
@@ -32,7 +32,7 @@ class Loan:
         """
         | Updates the notional amount of the loan.
 
-        :param new_value: New notional amount
+        :param new_value: New notional amount.
         """
         self.notional_amount = new_value
 
@@ -40,6 +40,6 @@ class Loan:
         """
         | Updates the loan interest rate.
 
-        :param new_value: Loan interest rate
+        :param new_value: Loan interest rate.
         """
         self.interest_rate = new_value

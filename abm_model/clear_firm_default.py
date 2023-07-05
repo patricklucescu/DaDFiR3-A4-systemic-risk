@@ -11,14 +11,14 @@ def clear_firm_default(firms: dict,
     """
     |Clear the good markets and see what firms default. Additionally, for each CDS compute the recovery rate.
 
-    :param firms: Dictionary with all firms
-    :param banks: Dictionary with all banks
-    :param economy_state: The economy state modelled as a Markov Model
-    :param good_consumption: Average good consumption for the different economy states
-    :param good_consumption_std: Standard deviation for the good consumption for the different economy states
-    :param min_consumption: Minimum consumption of goods
-    :param max_consumption: Maximum consumption of goods
-    :return: A tuple containing the updated firms dictionary, banks dictionary, and a list of defaulted firms
+    :param firms: Dictionary with all firms.
+    :param banks: Dictionary with all banks.
+    :param economy_state: The economy state modelled as a Markov Model.
+    :param good_consumption: Average good consumption for the different economy states.
+    :param good_consumption_std: Standard deviation for the good consumption for the different economy states.
+    :param min_consumption: Minimum consumption of goods.
+    :param max_consumption: Maximum consumption of goods.
+    :return: A tuple containing the updated firms dictionary, banks dictionary, and a list of defaulted firms.
     """
 
     # adjust production based on Credit Market & do the good consumption market

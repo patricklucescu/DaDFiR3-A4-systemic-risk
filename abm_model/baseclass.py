@@ -16,7 +16,7 @@ class BaseAgent:
         """
         | Change the policy rate.
 
-        :param new_value: New policy rate
+        :param new_value: New policy rate.
         """
         cls.policy_rate = new_value
 
@@ -25,7 +25,7 @@ class BaseAgent:
         """
         | Change the list of firm ids.
 
-        :param new_value: New list of firm ids
+        :param new_value: New list of firm ids.
         """
         cls.firm_ids = new_value
 
@@ -34,7 +34,7 @@ class BaseAgent:
         """
         | Change the list of bank ids.
 
-        :param new_value: New list of bank ids
+        :param new_value: New list of bank ids.
         """
         cls.bank_ids = new_value
 
@@ -43,7 +43,7 @@ class BaseAgent:
         """
         | Change maximum number of banks a bank can go for an interbank loan.
 
-        :param new_value: Maximum number of interbank loan applications
+        :param new_value: Maximum number of interbank loan applications.
         """
         cls.max_interbank_loan = new_value
 
@@ -52,7 +52,7 @@ class BaseAgent:
         """
         | Change maximum number of banks a firm can go for a loan.
 
-        :param new_value: Maximum number of firm-bank loan applications
+        :param new_value: Maximum number of firm-bank loan applications.
         """
         cls.max_bank_loan = new_value
 
@@ -61,6 +61,6 @@ class BaseAgent:
         """
         | Change maximum number of banks a bank can go for a CDS.
 
-        :param new_value: Maximum number of CDS applications
+        :param new_value: Maximum number of CDS applications.
         """
         cls.max_cds_requests = new_value

@@ -11,9 +11,9 @@ class MarkovModel:
         | Constructor method of the MarkovModel class. It initializes a MarkovModel object with the
         specified parameters.
 
-        :param starting_prob: List of probabilities representing the starting probabilities for each state
-        :param transition_matrix: Square matrix representing the transition probabilities between states
-        :param states: A dictionary mapping state indices to state names
+        :param starting_prob: List of probabilities representing the starting probabilities for each state.
+        :param transition_matrix: Square matrix representing the transition probabilities between states.
+        :param states: A dictionary mapping state indices to state names.
         """
         assert (np.shape(transition_matrix)[0] ==
                 np.shape(transition_matrix)[1]), f"Please give a square transition matrix"

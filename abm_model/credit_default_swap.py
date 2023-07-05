@@ -16,14 +16,14 @@ class CDS:
         """
         | Constructor method that initializes the CDS object with the specific parameters.
 
-        :param buyer: The buyer of the CDS
-        :param seller: The seller of the CDS
-        :param reference_entity: The reference entity for the CDS
-        :param default_probability: The default probability of the reference entity
-        :param notional_amount: The notional amount of the CDS
-        :param spread: The spread of the CDS
-        :param tenor: The tenor of the CDS. Default is 1
-        :param risk_free_rate: The risk-free rate. Default is 0
+        :param buyer: The buyer of the CDS.
+        :param seller: The seller of the CDS.
+        :param reference_entity: The reference entity for the CDS.
+        :param default_probability: The default probability of the reference entity.
+        :param notional_amount: The notional amount of the CDS.
+        :param spread: The spread of the CDS.
+        :param tenor: The tenor of the CDS. Default is 1.
+        :param risk_free_rate: The risk-free rate. Default is 0.
         """
         self.buyer = buyer
         self.seller = seller

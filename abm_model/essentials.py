@@ -11,8 +11,8 @@ def merge_dict(list_dict: list[dict]) -> dict:
     """
     | Merge list of dictionaries into a single one by aggregating values into lists.
 
-    :param list_dict: List of dictionaries to be merged
-    :return: The merged dictionary
+    :param list_dict: List of dictionaries to be merged.
+    :return: The merged dictionary.
     """
     out_dict = defaultdict(list)
     for d in list_dict:
@@ -25,7 +25,7 @@ def wages_adj() -> float:
     """
     | Helper function to generate randomness in adjusting the firm wage.
 
-    :return: Random number
+    :return: Random number.
     """
     return np.random.uniform(0, max_increase_wages, 1)[0]
 
@@ -34,7 +34,7 @@ def price_adj() -> float:
     """
     | Helper function to generate randomness in adjusting the firm price.
 
-    :return: Random number
+    :return: Random number.
     """
     return np.random.uniform(0, max_increase_prices, 1)[0]
 
@@ -43,7 +43,7 @@ def supply_adj() -> float:
     """
     | Helper function to generate randomness in adjusting the firm supply.
 
-    :return: Random number
+    :return: Random number.
     """
     return np.random.uniform(0, max_increase_quantity, 1)[0]
 
@@ -57,13 +57,13 @@ def compute_expected_supply_price(excess_supply: float,
     """
     | Compute expected supply and price based on the book Macroeconomics from Bottom-up by Gatti et al. (2011)  page 55.
 
-    :param excess_supply: Previous period excess supply
-    :param prev_supply: Previous period supply
-    :param prev_price: Previous period price
-    :param market_price: Previous period market price
-    :param wage: Current wage
-    :param productivity: Current firm productivity
-    :return: price and supply for current period
+    :param excess_supply: Previous period excess supply.
+    :param prev_supply: Previous period supply.
+    :param prev_price: Previous period price.
+    :param market_price: Previous period market price.
+    :param wage: Current wage.
+    :param productivity: Current firm productivity.
+    :return: price and supply for current period.
     """
     statement_1 = (excess_supply > 0 and prev_price >= market_price)
     statement_2 = (excess_supply == 0 and prev_price < market_price)

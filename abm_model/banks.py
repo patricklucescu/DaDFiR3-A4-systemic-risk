@@ -16,7 +16,7 @@ class BaseBank(BaseAgent):
         """
         | Function to change the value of the deposit systemic shock.
 
-        :param new_value: Value of the deposit systemic shock
+        :param new_value: Value of the deposit systemic shock.
         """
         cls.deposit_systemic_shock = new_value
 
@@ -25,7 +25,7 @@ class BaseBank(BaseAgent):
         """
         | Function to change the value of h_theta which controls the randomness in the interest rate for loans.
 
-        :param new_value: Value of h_theta
+        :param new_value: Value of h_theta.
         """
         cls.h_theta = new_value
 
@@ -47,12 +47,12 @@ class Bank(BaseBank):
         """
         | Constructor method that initializes the bank object with the specific parameters.
 
-        :param str idx: A unique identifier for the bank
-        :param float equity: The equity value of the bank
-        :param float deposits: The current deposit amount of the bank
-        :param float capital_requirement: The capital requirement of the bank
-        :param float covered_cds_prob: The probability of a covered credit default swap (CDS) being used by the bank
-        :param float naked_cds_prob: The probability of a naked CDS being used by the bank
+        :param str idx: A unique identifier for the bank.
+        :param float equity: The equity value of the bank.
+        :param float deposits: The current deposit amount of the bank.
+        :param float capital_requirement: The capital requirement of the bank.
+        :param float covered_cds_prob: The probability of a covered credit default swap (CDS) being used by the bank.
+        :param float naked_cds_prob: The probability of a naked CDS being used by the bank.
         """
         super().__init__()
         self.idx = idx
@@ -88,8 +88,8 @@ class Bank(BaseBank):
         It iterates over the loan requests, considering factors such as the borrower type and financial
         fragility to update the interest rate of the loan offers.
 
-        :param loans: list of Loan objects
-        :return: List of Loans that could be granted
+        :param loans: list of Loan objects.
+        :return: List of Loans that could be granted.
         """
         loan_offers = []
         for loan in loans:
@@ -114,9 +114,9 @@ class Bank(BaseBank):
         | Checks if a loan can be granted by the bank based on the maximum credit limit and other loan and
         asset amounts.
 
-        :param loan: The loan in question
+        :param loan: The loan in question.
         :return: It returns False if it cannot be granted. Otherwise, it returns the difference between the
-        available funds and the notional of the loan
+        available funds and the notional of the loan.
         """
         if loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) > self.max_credit:
             return False
@@ -129,7 +129,7 @@ class Bank(BaseBank):
         """
         | Checks if the CDS can be granted based on the maximum credit limit and other loan and asset amounts.
 
-        :param premium: The CDS premium
+        :param premium: The CDS premium.
         :return:
         """
         return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
@@ -158,8 +158,8 @@ class Bank(BaseBank):
         """
         | Decides whether to use a covered or naked credit default swap (CDS) based on the specified probabilities.
 
-        :param covered: indicates whether a covered CDS should be considered
-        :return: 1 if a CDS is desired and 0 otherwise
+        :param covered: indicates whether a covered CDS should be considered.
+        :return: 1 if a CDS is desired and 0 otherwise.
         """
         if covered:
             return np.random.binomial(1, self.covered_cds_prob)
@@ -172,8 +172,8 @@ class Bank(BaseBank):
         | Function calculates and provides the spread value for a credit default swap (CDS) based on the Hull CDS
         valuation model for a one-period model.
 
-        :param loan: Underlying Loan object on which the CDS is written
-        :return: CDS spread value
+        :param loan: Underlying Loan object on which the CDS is written.
+        :return: CDS spread value.
         """
         R = 0.3
         q = loan.prob_default_borrower + max(np.random.normal(0, 0.01), 10 ** (-2) - loan.prob_default_borrower)

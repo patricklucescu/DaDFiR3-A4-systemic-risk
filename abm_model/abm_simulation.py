@@ -124,7 +124,6 @@ for t in range(T):
     for firm_id in firms:
         firms[firm_id].reset_variables()
 
-
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
     max_id_bank = max([int(bank_id[5:]) for bank_id in base_agent.bank_ids])
@@ -138,7 +137,7 @@ for t in range(T):
                                          covered_cds_prob,
                                          naked_cds_prob)
 
-    #update base agent for new IDs
+    # update base agent for new IDs
     updated_firm_ids = [firm_id for firm_id in (base_agent.firm_ids + new_firm_ids) if firm_id not in defaulted_firms]
     updated_bank_ids = [bank_id for bank_id in (base_agent.bank_ids + new_bank_ids) if bank_id not in defaulted_banks]
     base_agent.change_firm_ids(updated_firm_ids)
@@ -147,11 +146,17 @@ for t in range(T):
     # do calculations for next period
     economy_state.get_next_state()
 
-    #get historic values and print control variables for analytics
-    historic_data = \
-                                    analytics(historic_data, banks, t, T,
-                                    economy_state, defaulted_banks, base_firm,
-                                    base_agent, defaulted_firms, firms)
+    # get historic values and print control variables for analytics
+    historic_data = analytics(historic_data,
+                              banks,
+                              t,
+                              T,
+                              economy_state,
+                              defaulted_banks,
+                              base_firm,
+                              base_agent,
+                              defaulted_firms,
+                              firms)
 
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")

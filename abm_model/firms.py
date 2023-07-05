@@ -16,7 +16,7 @@ class BaseFirm(BaseAgent):
         """
         | Change the market price of the base firm.
 
-        :param new_value: The new market price
+        :param new_value: The new market price.
         """
         cls.market_price = new_value
 
@@ -25,7 +25,7 @@ class BaseFirm(BaseAgent):
         """
         | Change the minimum wage of the base firm.
 
-        :param new_value: The new minimum wage
+        :param new_value: The new minimum wage.
         """
         cls.min_wage = new_value
 
@@ -43,14 +43,14 @@ class Firm(BaseFirm):
         """
         | Constructor method that initializes the firm object with the specific parameters.
 
-        :param idx: A unique identifier for the Firm
-        :param supply: Supply in the previous period
-        :param excess_supply: Excess supply in the previous period
-        :param price: Firm's good price in the previous period
-        :param wage: The wage the firm pays for the labour
-        :param equity: Equity of the firm
-        :param productivity: Productivity of the firm
-        :param default_probability: Default probability of the firm
+        :param idx: A unique identifier for the Firm.
+        :param supply: Supply in the previous period.
+        :param excess_supply: Excess supply in the previous period.
+        :param price: Firm's good price in the previous period.
+        :param wage: The wage the firm pays for the labour.
+        :param equity: Equity of the firm.
+        :param productivity: Productivity of the firm.
+        :param default_probability: Default probability of the firm.
         """
         super().__init__()
         self.idx = idx
@@ -145,7 +145,7 @@ class Firm(BaseFirm):
         """
         | Check if the firm has defaulted.
 
-        :return: True if the firm has defaulted, False otherwise
+        :return: True if the firm has defaulted, False otherwise.
         """
         if self.equity < sum([(1+loan.interest_rate) * loan.notional_amount for loan in self.loans]):
             # we have default of the entity
