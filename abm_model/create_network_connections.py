@@ -1,4 +1,3 @@
-from abm_model.loan import Loan
 from abm_model.credit_default_swap import CDS
 from abm_model.logs import LogMessage
 import random
@@ -14,20 +13,19 @@ def create_network_connections(loan_offers: dict,
                                banks_idx: list,
                                covered_cds_prob: float,
                                naked_cds_prob: float,
-                               t: float):
+                               t: float) -> tuple:
     """
     | Create the Bank-to-Firm Loans, Bank-to-Bank Loans and the Bank-to-Bank CDS contracts.
 
-    @param loan_offers: Dictionary that has as keys the firm ids and as values the possible loans.
-    @param banks: Dictionary of banks.
-    @param firms: Dictionary of Firms.
-    @param logs: Log file containing all actions in the simulation.
-    @param banks_idx: List of bank ids.
-    @param covered_cds_prob: Probability a bank wants to buy a covered CDS.
-    @param naked_cds_prob: Probability a bank wants to buy a naked CDS.
-    @param t: Simulation current time.
-
-    @return: List of variables of interest.
+    :param loan_offers: Dictionary that has as keys the firm ids and as values the possible loans.
+    :param banks: Dictionary of banks.
+    :param firms: Dictionary of Firms.
+    :param logs: Log file containing all actions in the simulation.
+    :param banks_idx: List of bank ids.
+    :param covered_cds_prob: Probability a bank wants to buy a covered CDS.
+    :param naked_cds_prob: Probability a bank wants to buy a naked CDS.
+    :param t: Simulation current time.
+    :return: List of variables of interest.
     """
 
     # define list of all interbank contracts made in this period

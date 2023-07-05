@@ -1,20 +1,32 @@
 from abm_model.loan import Loan
 from abm_model.baseclass import BaseAgent
-import numpy as np
 import random
 from abm_model.essentials import *
 
 
 class BaseFirm(BaseAgent):
+    """
+    | BaseFirm class represents the base agent for a firm in the ABM model.
+    """
     market_price = None
     min_wage = None
 
     @classmethod
-    def change_market_price(cls, new_value):
+    def change_market_price(cls, new_value: float):
+        """
+        | Change the market price of the base firm.
+
+        :param new_value: The new market price.
+        """
         cls.market_price = new_value
 
     @classmethod
-    def change_min_wage(cls, new_value):
+    def change_min_wage(cls, new_value: float):
+        """
+        | Change the minimum wage of the base firm.
+
+        :param new_value: The new minimum wage.
+        """
         cls.min_wage = new_value
 
 
@@ -28,6 +40,18 @@ class Firm(BaseFirm):
                  equity,
                  productivity,
                  default_probability):
+        """
+        | Constructor method that initializes the firm object with the specific parameters.
+
+        :param idx: A unique identifier for the Firm.
+        :param supply: Supply in the previous period.
+        :param excess_supply: Excess supply in the previous period.
+        :param price: Firm's good price in the previous period.
+        :param wage: The wage the firm pays for the labour.
+        :param equity: Equity of the firm.
+        :param productivity: Productivity of the firm.
+        :param default_probability: Default probability of the firm.
+        """
         super().__init__()
         self.idx = idx
         self.supply = supply
@@ -47,9 +71,9 @@ class Firm(BaseFirm):
 
     def compute_expected_supply_and_prices(self):
         """
-        update the price and supply for the firm
+        | Compute the expected supply and prices for the firm.
         """
-        self.wage = max([self.min_wage, self.wage * (1 + wages_adj()[0])])
+        self.wage = max([self.min_wage, self.wage * (1 + wages_adj())])
         self.price, self.supply = compute_expected_supply_price(self.excess_supply,
                                                                 self.supply,
                                                                 self.price,
@@ -59,6 +83,9 @@ class Firm(BaseFirm):
         self.total_wages = self.wage * self.supply / self.productivity
 
     def check_loan_desire_and_choose_loans(self):
+        """
+        | Check if the firm has a desire for loans and choose potential lenders.
+        """
         # check if there is loan desire
         self.credit_demand = max([self.total_wages - self.equity, 0])
         self.financial_fragility = self.credit_demand / self.equity
@@ -76,11 +103,27 @@ class Firm(BaseFirm):
             self.potential_lenders = []
 
     def adjust_production(self):
-        if self.total_wages != self.equity:  # loan has not been paid, so we do not have money for all wages
+        """
+        | Adjust the production based on the available funds.
+        """
+        if self.total_wages != self.equity:
+            # loan has not been paid, so we do not have money for all wages
             #  we need to reduce supply
             self.supply = self.equity * self.productivity / self.wage
 
-    def produce_supply_consumption(self, min_consumption, max_consumption, overall_consumption, consumption_std):
+    def produce_supply_consumption(self,
+                                   min_consumption: float,
+                                   max_consumption: float,
+                                   overall_consumption: float,
+                                   consumption_std: float):
+        """
+        | Produce the supply and handle consumption based on certain parameters.
+
+        :param min_consumption: The minimum consumption as a percentage between 0 and 1.
+        :param max_consumption: The maximum consumption as a percentage between 0 and 1.
+        :param overall_consumption: The overall consumption.
+        :param consumption_std: The standard deviation of consumption.
+        """
         self.equity -= self.total_wages
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)
@@ -88,6 +131,9 @@ class Firm(BaseFirm):
         self.excess_supply = (1 - actual_consumption_percentage) * self.supply
 
     def reset_variables(self):
+        """
+        | Resets the certain variables of the Firm object to make it ready to be used for the next period.
+        """
         self.loans = []
         self.total_wages = None
         self.credit_demand = None
@@ -96,6 +142,11 @@ class Firm(BaseFirm):
         self.recovery_rate = None
 
     def check_default(self):
+        """
+        | Check if the firm has defaulted.
+
+        :return: True if the firm has defaulted, False otherwise.
+        """
         if self.equity < sum([(1+loan.interest_rate) * loan.notional_amount for loan in self.loans]):
             # we have default of the entity
             return True

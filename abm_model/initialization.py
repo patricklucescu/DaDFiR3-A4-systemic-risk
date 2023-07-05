@@ -6,7 +6,19 @@ import numpy as np
 h_theta = 0.1
 
 
-def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, naked_cds_prob):
+def generate_random_firms_and_banks(firms_ids: list,
+                                    banks_ids: list,
+                                    covered_cds_prob: float,
+                                    naked_cds_prob: float) -> tuple:
+    """
+    | Generates random firms and banks based on the given firm and bank IDs.
+
+    :param firms_ids: A list of firm IDs.
+    :param banks_ids: A list of bank IDs.
+    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used.
+    :param naked_cds_prob: The probability of a naked CDS being used.
+    :return: A tuple containing the generated firms, banks, base agent, base firm, and base bank.
+    """
     # base agent, base bank and base firm
     base_agent = BaseAgent()
     base_firm = BaseFirm()
@@ -58,7 +70,25 @@ def generate_random_firms_and_banks(firms_ids, banks_ids, covered_cds_prob, nake
     return firms, banks, base_agent, base_firm, base_bank
 
 
-def generate_new_entities(new_bank_ids, new_firm_ids, banks, firms, base_firm, covered_cds_prob, naked_cds_prob):
+def generate_new_entities(new_bank_ids: list,
+                          new_firm_ids: list,
+                          banks: dict,
+                          firms: dict,
+                          base_firm: BaseAgent,
+                          covered_cds_prob: float,
+                          naked_cds_prob: float) -> tuple:
+    """
+    | Generates new banks and firms based on the given new bank and firm IDs.
+
+    :param new_bank_ids: A list of new bank IDs.
+    :param new_firm_ids: A list of new firm IDs.
+    :param banks: A dictionary of existing banks.
+    :param firms: A dictionary of existing firms.
+    :param base_firm: The base firm object.
+    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used.
+    :param naked_cds_prob: The probability of a naked CDS being used.
+    :return: A tuple containing the updated firms and banks.
+    """
     # for banks generation
     capital_req = 0.9
     average_equity = np.mean([banks[bank_id].equity for bank_id in banks.keys()])
@@ -109,8 +139,3 @@ def generate_new_entities(new_bank_ids, new_firm_ids, banks, firms, base_firm, c
             default_probability=default_probability[i]
         )
     return firms, banks
-
-
-def do(base_agent):
-    base_agent.change_policy_rate(5)
-    return base_agent
