@@ -37,23 +37,37 @@ def analytics(historic_data: dict,
         historic_data['average_wage'] = []
         historic_data['bank_defaults'] = []
         historic_data['firm_defaults'] = []
-    # end-of-period reporting
+        historic_data['average_firmloan_ir'] = []
+        historic_data['average_bankloan_ir'] = []
+
+
+    #end-of-period reporting
     historic_data['banks_equity'] = update_bank_equity(historic_data['banks_equity'], banks, t)
-    historic_data['market_price'] = update_market_prices(historic_data['market_price'], base_firm)
-    historic_data['average_wage'] = update_average_wage(historic_data['average_wage'], firms)
-    historic_data['bank_defaults'], historic_data['firm_defaults'] = update_nr_of_defaults(
-        historic_data['bank_defaults']
-        , historic_data['firm_defaults']
-        , defaulted_firms, defaulted_banks)
-    # end-of-simulation reporting
-    if t == (T - 1):
+    historic_data['market_price'] = update_market_prices(historic_data['market_price'],base_firm)
+    historic_data['average_wage'] = udpate_average_wage(historic_data['average_wage'],firms)
+    historic_data['bank_defaults'],historic_data['firm_defaults'] = update_nr_of_defaults(historic_data['bank_defaults']
+                                                                                          ,historic_data['firm_defaults']
+                                                                                          ,defaulted_firms,defaulted_banks)
+    historic_data['average_firmloan_ir'],historic_data['average_bankloan_ir'] = update_average_interest_rates(historic_data['average_firmloan_ir']
+                                                                                                              ,historic_data['average_bankloan_ir']
+                                                                                                              ,logs)
+
+
+    #end-of-simulation reporting
+    if t==(T-1):
         plt.plot(historic_data['market_price'])
         plt.plot(historic_data['average_wage'])
         plt.title("Market Price and Wage")
         plt.legend(['Market Price', 'Average Wage'])
         plt.show()
-        print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids) - 1]}')
-        print(f'Last bank: {base_agent.firm_ids[len(base_agent.firm_ids) - 1]}')
+
+        plt.plot(historic_data['bank_defaults'])
+        plt.show()
+
+        print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids)-1]}')
+        print(f'Last bank: {base_agent.firm_ids[len(base_agent.firm_ids)-1]}')
+
+
     # print(f'time: {t} out of {T-1}')
     # print(f'economy state: {economy_state.current_state}')
     # print(f'defaulted banks: {defaulted_banks}')
@@ -123,4 +137,9 @@ def update_average_wage(historic_average_wage: list,
     """
     historic_average_wage.append(np.mean([firms[firm_id].wage for firm_id in firms]))
 
-    return historic_average_wage
+
+
+
+def update_average_interest_rates(historic_average_firmloan_ir,logs):
+
+    historic_average_firmloan_ir.append()
