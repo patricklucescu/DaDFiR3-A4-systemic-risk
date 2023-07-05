@@ -3,7 +3,7 @@ import numpy as np
 
 def analytics(historic_data, banks, t, T, economy_state,
               defaulted_banks, base_firm,
-              base_agent, defaulted_firms, firms):
+              base_agent, defaulted_firms, firms,logs):
 
     #initialize dictionary
     if len(historic_data) == 0:
@@ -12,6 +12,8 @@ def analytics(historic_data, banks, t, T, economy_state,
         historic_data['average_wage'] = []
         historic_data['bank_defaults'] = []
         historic_data['firm_defaults'] = []
+        historic_data['average_firmloan_ir'] = []
+        historic_data['average_bankloan_ir'] = []
 
 
     #end-of-period reporting
@@ -21,7 +23,9 @@ def analytics(historic_data, banks, t, T, economy_state,
     historic_data['bank_defaults'],historic_data['firm_defaults'] = update_nr_of_defaults(historic_data['bank_defaults']
                                                                                           ,historic_data['firm_defaults']
                                                                                           ,defaulted_firms,defaulted_banks)
-
+    historic_data['average_firmloan_ir'],historic_data['average_bankloan_ir'] = update_average_interest_rates(historic_data['average_firmloan_ir']
+                                                                                                              ,historic_data['average_bankloan_ir']
+                                                                                                              ,logs)
 
 
     #end-of-simulation reporting
@@ -30,6 +34,9 @@ def analytics(historic_data, banks, t, T, economy_state,
         plt.plot(historic_data['average_wage'])
         plt.title("Market Price and Wage")
         plt.legend(['Market Price','Average Wage'])
+        plt.show()
+
+        plt.plot(historic_data['bank_defaults'])
         plt.show()
 
         print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids)-1]}')
@@ -87,3 +94,9 @@ def udpate_average_wage(histroic_average_wage, firms):
     return histroic_average_wage
 
 
+
+
+
+def update_average_interest_rates(historic_average_firmloan_ir,logs):
+
+    historic_average_firmloan_ir.append()

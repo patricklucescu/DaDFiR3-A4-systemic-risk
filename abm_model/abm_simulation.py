@@ -12,9 +12,9 @@ import itertools
 import numpy as np
 
 # set up number of firms and banks and other parameters needed
-FIRMS = 100
-BANKS = 10
-T = 10
+FIRMS = 300
+BANKS = 20
+T = 400
 covered_cds_prob = 0.8
 naked_cds_prob = 0.1
 
@@ -152,7 +152,7 @@ for t in range(T):
     historic_data = \
                                     analytics(historic_data, banks, t, T,
                                     economy_state, defaulted_banks, base_firm,
-                                    base_agent, defaulted_firms, firms)
+                                    base_agent, defaulted_firms, firms, logs)
 
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")
