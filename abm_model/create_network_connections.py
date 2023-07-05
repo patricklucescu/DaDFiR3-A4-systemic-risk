@@ -28,6 +28,8 @@ def create_network_connections(loan_offers: dict,
     :return: List of variables of interest.
     """
 
+    period_t_transactions = []
+
     # define list of all interbank contracts made in this period
     interbank_contracts = []
     # create a random order in which firms choose their loans
@@ -64,6 +66,11 @@ def create_network_connections(loan_offers: dict,
                     time=t,
                     data=copy.deepcopy(bank_loan)
                 ))
+                period_t_transactions.append(LogMessage(
+                    message=f'Interbank loan extended from {bank_loan.lender} to {bank_loan.borrower}',
+                    time=t,
+                    data=copy.deepcopy(bank_loan)
+                ))
                 # extend the firm loan
                 loan_extended = True
             if loan_extended:
@@ -72,6 +79,11 @@ def create_network_connections(loan_offers: dict,
                 firms[loan.borrower].loans.append(loan)
                 firms[loan.borrower].equity += loan.notional_amount
                 logs.append(LogMessage(
+                    message=f'Loan extended from {loan.lender} to {loan.borrower}',
+                    time=t,
+                    data=copy.deepcopy(loan)
+                ))
+                period_t_transactions.append(LogMessage(
                     message=f'Loan extended from {loan.lender} to {loan.borrower}',
                     time=t,
                     data=copy.deepcopy(loan)
@@ -113,4 +125,11 @@ def create_network_connections(loan_offers: dict,
                             time=t,
                             data=copy.deepcopy(cds_transactions[bank_id])
                         ))
-    return firms, banks, interbank_contracts, logs
+                        period_t_transactions.append(LogMessage(
+                            message=f'CDS sold from {cds_transactions[bank_id].seller} to '
+                                    f'{cds_transactions[bank_id].buyer} on {cds_transactions[bank_id].reference_entity}'
+                            ,
+                            time=t,
+                            data=copy.deepcopy(cds_transactions[bank_id])
+                        ))
+    return firms, banks, interbank_contracts, logs, period_t_transactions
