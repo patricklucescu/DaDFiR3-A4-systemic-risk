@@ -1,10 +1,22 @@
 from abm_model.loan import Loan
-from abm_model.credit_default_swap import CDS
 import numpy as np
 
 
-def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, defaulted_firms):
-    """Do the market clearing for the banks network"""
+def clear_interbank_market(banks: dict,
+                           firms: dict,
+                           banks_idx: list,
+                           interbank_contracts: list,
+                           defaulted_firms: list) -> tuple:
+    """
+    | Perform the market clearing for the interbank market.
+
+    :param banks: A dictionary of banks.
+    :param firms: A dictionary of firms.
+    :param banks_idx: A list of bank indices.
+    :param interbank_contracts: A list of interbank contracts.
+    :param defaulted_firms: A list of defaulted firms.
+    :return: A tuple containing the updated banks dictionary and a list of defaulted banks.
+    """
 
     banks_idx.sort(key=lambda idx: int(idx[5:]))
     num_banks = len(banks_idx)
@@ -18,9 +30,6 @@ def clear_interbank_market(banks, firms, banks_idx, interbank_contracts, default
         else:
             buyer = banks_idx.index(contract.buyer)
             seller = banks_idx.index(contract.seller)
-            #I think netting-out the spread is wrong. It is part of the liability matrix and adds to the total payment vector
-            # ... Also, if recovery_rate is very close to 1, s.t. 1-R-spread < 0, you add negative entries to the liability matrix
-            # ... which should not happen.
             if contract.reference_entity in defaulted_firms:
                 liabilities[seller, buyer] += (contract.notional_amount *
                                                (1 - firms[contract.reference_entity].recovery_rate))

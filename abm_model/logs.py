@@ -3,19 +3,14 @@
 class LogMessage:
     """
     | LogMessage class represents a log message with a message, time, and data.
-
-    Attributes:
-    - message: A string representing the log message.
-    - time: A float representing the time when the log message was created.
-    - data: A list representing additional data associated with the log message.
     """
     def __init__(self, message: str, time: float, data: list):
         """
         | Initializes a LogMessage object with the specified message, time, and data.
 
-        @param message: A string representing the log message.
-        @param time: A float representing the time when the log message was created.
-        @param data: A list representing additional data associated with the log message.
+        :param message: A string representing the log message.
+        :param time: A float representing the time when the log message was created.
+        :param data: A list representing additional data associated with the log message.
         """
         self.message: str = message
         self.time = time
@@ -25,7 +20,7 @@ class LogMessage:
         """
         | Sets the time attribute of the LogMessage.
 
-        @param time: A float representing the time to be set.
+        :param time: A float representing the time to be set.
         """
         self.time = time
 
@@ -33,7 +28,7 @@ class LogMessage:
         """
         | Sets the message attribute of the LogMessage.
 
-        @param message: A string representing the message to be set.
+        :param message: A string representing the message to be set.
         """
         self.message = message
 
@@ -41,6 +36,6 @@ class LogMessage:
         """
         | Sets the data attribute of the LogMessage.
 
-        @param data: A list representing the data to be set.
+        :param data: A list representing the data to be set.
         """
         self.data = data

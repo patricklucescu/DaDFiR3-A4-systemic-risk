@@ -1,5 +1,4 @@
 import time
-
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
 from abm_model.essentials import merge_dict
 from abm_model.analytics import *

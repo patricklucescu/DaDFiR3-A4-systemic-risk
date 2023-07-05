@@ -1,6 +1,4 @@
 from abm_model.markov_model import MarkovModel
-from abm_model.credit_default_swap import CDS
-from abm_model.baseclass import BaseAgent
 
 
 def clear_firm_default(firms: dict,
@@ -13,15 +11,14 @@ def clear_firm_default(firms: dict,
     """
     |Clear the good markets and see what firms default. Additionally, for each CDS compute the recovery rate.
 
-    @param firms: Dictionary with all firms.
-    @param banks: Dictionary with all banks.
-    @param economy_state: The economy state modelled as a Markov Model.
-    @param good_consumption: Average good consumption for the different economy states.
-    @param good_consumption_std: Standard deviation for the good consumption for the different economy states.
-    @param min_consumption: Minimum consumption of goods.
-    @param max_consumption: Maximum consumption of goods.
-
-    @return: List of variables of interest.
+    :param firms: Dictionary with all firms
+    :param banks: Dictionary with all banks
+    :param economy_state: The economy state modelled as a Markov Model
+    :param good_consumption: Average good consumption for the different economy states
+    :param good_consumption_std: Standard deviation for the good consumption for the different economy states
+    :param min_consumption: Minimum consumption of goods
+    :param max_consumption: Maximum consumption of goods
+    :return: A tuple containing the updated firms dictionary, banks dictionary, and a list of defaulted firms
     """
 
     # adjust production based on Credit Market & do the good consumption market
@@ -33,7 +30,6 @@ def clear_firm_default(firms: dict,
                                                   max_consumption,
                                                   overall_consumption,
                                                   consumption_std)
-    # compute market price
 
     # see which firms remain solvent
     defaulted_firms = [firms[firm_id].idx for firm_id in firms.keys() if firms[firm_id].check_default()]
@@ -49,7 +45,7 @@ def clear_firm_default(firms: dict,
 
         firms[firm_id].equity -= adjustment_factor
         # now compute recovery rate for any cds written on the current firm, given firm does have a loan
-        # ...recovery rate not needed otherwise. Reset at end of period not to carry over the recovery rate
+        # recovery rate not needed otherwise
         if len(loans) > 0:
             firms[firm_id].recovery_rate = adjustment_factor / total_loans
 
