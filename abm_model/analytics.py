@@ -47,6 +47,10 @@ def analytics(historic_data: dict,
         historic_data['total_firmloan'] = []
         historic_data['total_bankloan'] = []
         historic_data['total_cds_notional'] = []
+        historic_data['bank_equity'] = []
+        historic_data['bank_deposits'] = []
+        historic_data['firm_equity'] = []
+        historic_data['firm_market_power'] = []
 
 
     #end-of-period reporting
@@ -67,37 +71,76 @@ def analytics(historic_data: dict,
                                              ,historic_data['total_cds_notional']
                                              ,period_t_transactions
                                              ,base_agent)
-
+    historic_data['bank_equity'],historic_data['bank_deposits'] = udpate_deposits_equity_bank(historic_data['bank_equity'],historic_data['bank_deposits'],banks)
+    historic_data['firm_equity'],historic_data['firm_market_power'] = udpate_deposits_equity_firm(historic_data['firm_equity'],historic_data['firm_market_power'],firms)
 
     #end-of-simulation reporting
     if t==(T-1):
-        fig, axs = plt.subplots(2, 2)
-        fig.set_size_inches(22, 10)
+        fig, ax = plt.subplots(2, 3)
+        fig.set_size_inches(25, 12)
 
-        plt.plot(historic_data['market_price'])
-        plt.plot(historic_data['average_wage'])
-        plt.title("Market Price and Wage")
-        plt.legend(['Market Price', 'Average Wage'])
-        plt.show()
+        color1='blue'
+        color2='orange'
+        color3='green'
+        color4='black'
 
-        plt.plot(historic_data['bank_defaults'])
-        plt.plot(historic_data['firm_defaults'])
-        plt.title("Bank and Firm defaults")
-        plt.legend(['Bank defaults', 'Firm defaults'])
-        plt.show()
+        ax[0,0].plot(historic_data['market_price'], color=color1)
+        ax[0,0].set_ylabel('Market Price',color=color1)
+        ax[0,0].tick_params(axis='y', labelcolor=color1)
+        rightAx=ax[0,0].twinx()
+        rightAx.plot(historic_data['average_wage'],color=color2)
+        rightAx.set_ylabel('Average Wage', color=color2)
+        rightAx.tick_params(axis='y', labelcolor=color2)
+        ax[0,0].set_title("Market Price and Wage")
 
-        plt.plot(historic_data['average_firmloan_ir'])
-        plt.plot(historic_data['average_bankloan_ir'])
-        plt.plot(historic_data['average_cds_spread'])
-        plt.title("Average Interest Rates and Spreads")
-        plt.legend(['Firm Loan IR', 'Interbank Loan IR', 'CDS spread'])
-        plt.show()
+        ax[0,1].plot(historic_data['bank_defaults'], color=color1)
+        ax[0,1].set_ylabel('Bank Defaults',color=color1)
+        ax[0,1].tick_params(axis='y', labelcolor=color1)
+        rightAx=ax[0,1].twinx()
+        rightAx.plot(historic_data['firm_defaults'],color=color2)
+        rightAx.set_ylabel('Firm Defaults', color=color2)
+        rightAx.tick_params(axis='y', labelcolor=color2)
+        ax[0,1].set_title("Bank and Firm Defaults")
 
-        plt.plot(historic_data['total_firmloan'])
-        plt.plot(historic_data['total_bankloan'])
-        plt.plot(historic_data['total_cds_notional'])
-        plt.title("Total Loans granted and CDS notional")
-        plt.legend(['Firm Loans Total', 'Interbank Loans Total', 'CDS Notional Total'])
+        ax[1,0].plot(historic_data['average_firmloan_ir'], color=color1)
+        ax[1,0].plot(historic_data['average_bankloan_ir'], color=color3)
+        ax[1,0].legend(['Firm Loan IR', 'Interbank Loan IR'])
+        ax[1,0].set_ylabel('Interest Rates', color=color4)
+        ax[1,0].tick_params(axis='y', labelcolor=color4)
+        rightAx = ax[1,0].twinx()
+        rightAx.plot(historic_data['average_cds_spread'], color=color2)
+        rightAx.set_ylabel('Spreads', color=color2)
+        rightAx.tick_params(axis='y', labelcolor=color2)
+        ax[1,0].set_title("Interest Rates and Spreads")
+
+        ax[1,1].plot(historic_data['total_firmloan'], color=color1)
+        ax[1,1].plot(historic_data['total_bankloan'], color=color3)
+        ax[1,1].legend(['Firm Loans Total', 'Interbank Loans Total'])
+        ax[1,1].set_ylabel('Loans Total', color=color4)
+        ax[1,1].tick_params(axis='y', labelcolor=color4)
+        rightAx = ax[1,1].twinx()
+        rightAx.plot(historic_data['total_cds_notional'], color=color2)
+        rightAx.set_ylabel('CDS Notional', color=color2)
+        rightAx.tick_params(axis='y', labelcolor=color2)
+        ax[1,1].set_title("Interest Rates and Spreads")
+
+        ax[0,2].plot(historic_data['bank_equity'], color=color1)
+        ax[0,2].set_ylabel('Bank Equity',color=color1)
+        ax[0,2].tick_params(axis='y', labelcolor=color1)
+        rightAx=ax[0,2].twinx()
+        rightAx.plot(historic_data['bank_deposits'],color=color2)
+        rightAx.set_ylabel('Bank Deposits', color=color2)
+        rightAx.tick_params(axis='y', labelcolor=color2)
+        ax[0,2].set_title("Bank Equity and Deposits")
+
+        ax[1,2].plot(historic_data['firm_equity'], color=color1)
+        ax[1,2].set_ylabel('Firm Equity',color=color1)
+        ax[1,2].tick_params(axis='y', labelcolor=color1)
+        rightAx=ax[1,2].twinx()
+        rightAx.plot(historic_data['firm_market_power'],color=color2)
+        rightAx.set_ylabel('Fraction Largest Firm', color=color2)
+        rightAx.tick_params(axis='y', labelcolor=color2)
+        ax[1,2].set_title("Firm Equity and Market Power")
         plt.show()
 
         print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids)-1]}')
@@ -227,3 +270,28 @@ def update_transaction_metrics(historic_average_firmloan_ir
 
     return historic_average_firmloan_ir,historic_average_bankloan_ir,historic_data_average_cds_spread, \
         historic_data_total_firmloan,historic_data_total_bankloan,historic_data_total_cds_notional
+
+
+
+def udpate_deposits_equity_bank(historic_bank_equity,historic_bank_deposits,banks):
+
+    historic_bank_equity.append(sum([banks[bank_id].equity for bank_id in banks]))
+    historic_bank_deposits.append(sum([banks[bank_id].deposits for bank_id in banks]))
+
+    return historic_bank_equity, historic_bank_deposits
+
+
+
+def udpate_deposits_equity_firm(historic_data_firm_equity,historic_data_firm_market_power,firms):
+
+    total_equity = sum([firms[firm_id].equity for firm_id in firms])
+    historic_data_firm_equity.append(total_equity)
+    historic_data_firm_market_power.append(max([firms[firm_id].equity for firm_id in firms])/total_equity)
+
+    return historic_data_firm_equity,historic_data_firm_market_power
+
+
+
+
+
+

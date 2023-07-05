@@ -13,7 +13,7 @@ import numpy as np
 # set up number of firms and banks and other parameters needed
 FIRMS = 300
 BANKS = 20
-T = 400
+T = 200
 covered_cds_prob = 0.8
 naked_cds_prob = 0.1
 
