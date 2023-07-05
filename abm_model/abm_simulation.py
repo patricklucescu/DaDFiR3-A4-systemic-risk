@@ -37,9 +37,9 @@ good_consumption_std = [0.2, 0.3]
 min_consumption = 0.1
 max_consumption = 1
 
-# create logs
+# create logs and initialize historic values
 logs = []
-historic_bank_equity = {}
+historic_data = {}
 
 # begin the simulation part
 for t in range(T):
@@ -125,8 +125,6 @@ for t in range(T):
         firms[firm_id].reset_variables()
 
 
-
-
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
     max_id_bank = max([int(bank_id[5:]) for bank_id in base_agent.bank_ids])
@@ -147,14 +145,13 @@ for t in range(T):
     base_agent.change_bank_ids(updated_bank_ids)
 
     # do calculations for next period
-
     economy_state.get_next_state()
 
-    print(f'time: {t} out of {T-1}')
-    print(f'economy state: {economy_state.current_state}')
-    print(f'defaulted banks: {defaulted_banks}')
-    print(f'market price: {base_firm.market_price}')
+    #get historic values and print control variables for analytics
+    historic_data = \
+                                    analytics(historic_data, banks, t, T,
+                                    economy_state, defaulted_banks, base_firm,
+                                    base_agent, defaulted_firms, firms)
 
-    historic_bank_equity = update_history(historic_bank_equity, banks, t)
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")
