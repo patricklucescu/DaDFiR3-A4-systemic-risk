@@ -11,9 +11,9 @@ import itertools
 import numpy as np
 
 # set up number of firms and banks and other parameters needed
-FIRMS = 100
-BANKS = 10
-T = 10
+FIRMS = 300
+BANKS = 20
+T = 400
 covered_cds_prob = 0.8
 naked_cds_prob = 0.1
 
@@ -63,7 +63,7 @@ for t in range(T):
 
     # start the network allocation of loans and cds
     print(f"Period {t}: Create network connections")
-    firms, banks, interbank_contracts, logs = create_network_connections(loan_offers,
+    firms, banks, interbank_contracts, logs, period_t_transactions = create_network_connections(loan_offers,
                                                                          banks,
                                                                          firms,
                                                                          logs,
@@ -156,7 +156,8 @@ for t in range(T):
                               base_firm,
                               base_agent,
                               defaulted_firms,
-                              firms)
+                              firms,
+                              period_t_transactions)
 
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")

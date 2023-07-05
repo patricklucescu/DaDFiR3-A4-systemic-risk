@@ -3,6 +3,8 @@ import numpy as np
 from abm_model.markov_model import MarkovModel
 from abm_model.firms import BaseFirm
 from abm_model.baseclass import BaseAgent
+from abm_model.loan import Loan
+from abm_model.credit_default_swap import CDS
 
 
 def analytics(historic_data: dict,
@@ -14,7 +16,8 @@ def analytics(historic_data: dict,
               base_firm: BaseFirm,
               base_agent: BaseAgent,
               defaulted_firms: list,
-              firms: dict) -> dict:
+              firms: dict,
+              period_t_transactions: list) -> dict:
     """
     | Perform analytics and update historic data during the simulation.
 
@@ -28,6 +31,7 @@ def analytics(historic_data: dict,
     :param base_agent: An instance of the BaseAgent class.
     :param defaulted_firms: A list of defaulted firm IDs.
     :param firms: A dictionary containing all firms.
+    :param period_t_transactions: A list containing all transactions of period t
     :return: The updated historic data dictionary.
     """
     # initialize dictionary
@@ -37,23 +41,69 @@ def analytics(historic_data: dict,
         historic_data['average_wage'] = []
         historic_data['bank_defaults'] = []
         historic_data['firm_defaults'] = []
-    # end-of-period reporting
+        historic_data['average_firmloan_ir'] = []
+        historic_data['average_bankloan_ir'] = []
+        historic_data['average_cds_spread'] = []
+        historic_data['total_firmloan'] = []
+        historic_data['total_bankloan'] = []
+        historic_data['total_cds_notional'] = []
+
+
+    #end-of-period reporting
     historic_data['banks_equity'] = update_bank_equity(historic_data['banks_equity'], banks, t)
-    historic_data['market_price'] = update_market_prices(historic_data['market_price'], base_firm)
-    historic_data['average_wage'] = update_average_wage(historic_data['average_wage'], firms)
-    historic_data['bank_defaults'], historic_data['firm_defaults'] = update_nr_of_defaults(
-        historic_data['bank_defaults']
-        , historic_data['firm_defaults']
-        , defaulted_firms, defaulted_banks)
-    # end-of-simulation reporting
-    if t == (T - 1):
+    historic_data['market_price'] = update_market_prices(historic_data['market_price'],base_firm)
+    historic_data['average_wage'] = udpate_average_wage(historic_data['average_wage'],firms)
+    historic_data['bank_defaults'],historic_data['firm_defaults'] \
+        = update_nr_of_defaults(historic_data['bank_defaults']
+                                ,historic_data['firm_defaults']
+                                ,defaulted_firms,defaulted_banks)
+    historic_data['average_firmloan_ir'],historic_data['average_bankloan_ir'],historic_data['average_cds_spread'], \
+        historic_data['total_firmloan'], historic_data['total_bankloan'], historic_data['total_cds_notional'] \
+                = update_transaction_metrics(historic_data['average_firmloan_ir']
+                                             ,historic_data['average_bankloan_ir']
+                                             ,historic_data['average_cds_spread']
+                                             ,historic_data['total_firmloan']
+                                             ,historic_data['total_bankloan']
+                                             ,historic_data['total_cds_notional']
+                                             ,period_t_transactions
+                                             ,base_agent)
+
+
+    #end-of-simulation reporting
+    if t==(T-1):
+        fig, axs = plt.subplots(2, 2)
+        fig.set_size_inches(22, 10)
+
         plt.plot(historic_data['market_price'])
         plt.plot(historic_data['average_wage'])
         plt.title("Market Price and Wage")
         plt.legend(['Market Price', 'Average Wage'])
         plt.show()
-        print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids) - 1]}')
-        print(f'Last bank: {base_agent.firm_ids[len(base_agent.firm_ids) - 1]}')
+
+        plt.plot(historic_data['bank_defaults'])
+        plt.plot(historic_data['firm_defaults'])
+        plt.title("Bank and Firm defaults")
+        plt.legend(['Bank defaults', 'Firm defaults'])
+        plt.show()
+
+        plt.plot(historic_data['average_firmloan_ir'])
+        plt.plot(historic_data['average_bankloan_ir'])
+        plt.plot(historic_data['average_cds_spread'])
+        plt.title("Average Interest Rates and Spreads")
+        plt.legend(['Firm Loan IR', 'Interbank Loan IR', 'CDS spread'])
+        plt.show()
+
+        plt.plot(historic_data['total_firmloan'])
+        plt.plot(historic_data['total_bankloan'])
+        plt.plot(historic_data['total_cds_notional'])
+        plt.title("Total Loans granted and CDS notional")
+        plt.legend(['Firm Loans Total', 'Interbank Loans Total', 'CDS Notional Total'])
+        plt.show()
+
+        print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids)-1]}')
+        print(f'Last bank: {base_agent.firm_ids[len(base_agent.firm_ids)-1]}')
+
+
     # print(f'time: {t} out of {T-1}')
     # print(f'economy state: {economy_state.current_state}')
     # print(f'defaulted banks: {defaulted_banks}')
@@ -112,7 +162,7 @@ def update_nr_of_defaults(historic_bank_defaults: list,
     return historic_bank_defaults, historic_firm_defaults
 
 
-def update_average_wage(historic_average_wage: list,
+def udpate_average_wage(historic_average_wage: list,
                         firms: dict) -> list:
     """
     | Update the historic average wage of the firms.
@@ -124,3 +174,56 @@ def update_average_wage(historic_average_wage: list,
     historic_average_wage.append(np.mean([firms[firm_id].wage for firm_id in firms]))
 
     return historic_average_wage
+
+
+
+def update_transaction_metrics(historic_average_firmloan_ir
+                               ,historic_average_bankloan_ir
+                               ,historic_data_average_cds_spread
+                               ,historic_data_total_firmloan
+                               ,historic_data_total_bankloan
+                               ,historic_data_total_cds_notional
+                               ,period_t_transactions, base_agent):
+
+    notional_amount_weighted_ir_bankloan = 0; total_bankloan = 0
+    notional_amount_weighted_ir_firmloan = 0; total_firmloan = 0
+    notional_amount_weighted_cds_spread = 0; total_cds_notional = 0
+
+    for transaction_id in range(len(period_t_transactions)):
+
+        if type(period_t_transactions[transaction_id].data) == Loan:
+
+            if period_t_transactions[transaction_id].data.borrower in base_agent.firm_ids:
+                notional_amount_weighted_ir_firmloan += period_t_transactions[transaction_id].data.notional_amount * \
+                                                        period_t_transactions[transaction_id].data.interest_rate
+                total_firmloan += period_t_transactions[transaction_id].data.notional_amount
+            else:
+                notional_amount_weighted_ir_bankloan += period_t_transactions[transaction_id].data.notional_amount * \
+                                                        period_t_transactions[transaction_id].data.interest_rate
+                total_bankloan += period_t_transactions[transaction_id].data.notional_amount
+
+        elif type(period_t_transactions[transaction_id].data) == CDS:
+
+            notional_amount_weighted_cds_spread += period_t_transactions[transaction_id].data.notional_amount * \
+                                                        period_t_transactions[transaction_id].data.spread
+            total_cds_notional += period_t_transactions[transaction_id].data.notional_amount
+
+    if total_firmloan == 0:
+        historic_average_firmloan_ir.append(0)
+    else:
+        historic_average_firmloan_ir.append(notional_amount_weighted_ir_firmloan/total_firmloan)
+    if total_bankloan == 0:
+        historic_average_bankloan_ir.append(0)
+    else:
+        historic_average_bankloan_ir.append(notional_amount_weighted_ir_bankloan / total_bankloan)
+    if total_cds_notional == 0:
+        historic_data_average_cds_spread.append(0)
+    else:
+        historic_data_average_cds_spread.append(notional_amount_weighted_cds_spread / total_cds_notional)
+    historic_data_total_firmloan.append(total_firmloan)
+    historic_data_total_bankloan.append(total_bankloan)
+    historic_data_total_cds_notional.append(total_cds_notional)
+
+
+    return historic_average_firmloan_ir,historic_average_bankloan_ir,historic_data_average_cds_spread, \
+        historic_data_total_firmloan,historic_data_total_bankloan,historic_data_total_cds_notional
