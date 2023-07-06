@@ -1,3 +1,4 @@
+import copy
 import time
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
 from abm_model.essentials import merge_dict
@@ -34,7 +35,7 @@ economy_state = MarkovModel(starting_prob=starting_prob,
 # good consumption based on economy state
 good_consumption = [0.8, 0.6]
 good_consumption_std = [0.2, 0.3]
-min_consumption = 0.5
+min_consumption = 0.1
 max_consumption = 1
 
 # create logs and initialize historic values
@@ -108,13 +109,13 @@ for t in range(T):
         logs.append(LogMessage(
             message=f'Firm {firm_id} has defaulted.',
             time=t,
-            data=firm_id
+            data=copy.deepcopy(firms[firm_id])
         ))
     for bank_id in defaulted_banks:
         logs.append(LogMessage(
             message=f'Bank {bank_id} has defaulted.',
             time=t,
-            data=firm_id
+            data=copy.deepcopy(banks[bank_id])
         ))
 
     # get historic values and print control variables for analytics
