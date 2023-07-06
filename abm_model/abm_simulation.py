@@ -11,11 +11,11 @@ import itertools
 import numpy as np
 
 # set up number of firms and banks and other parameters needed
-FIRMS = 300
+FIRMS = 500
 BANKS = 20
-T = 200
-covered_cds_prob = 0.8
-naked_cds_prob = 0.1
+T = 50
+covered_cds_prob = 0.2
+naked_cds_prob = 0.05
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
@@ -32,9 +32,9 @@ economy_state = MarkovModel(starting_prob=starting_prob,
                             states=states)
 
 # good consumption based on economy state
-good_consumption = [0.8, 0.4]
+good_consumption = [0.8, 0.6]
 good_consumption_std = [0.2, 0.3]
-min_consumption = 0.1
+min_consumption = 0.5
 max_consumption = 1
 
 # create logs and initialize historic values
@@ -124,6 +124,19 @@ for t in range(T):
     for firm_id in firms:
         firms[firm_id].reset_variables()
 
+    # get historic values and print control variables for analytics
+    historic_data = analytics(historic_data,
+                              banks,
+                              t,
+                              T,
+                              economy_state,
+                              defaulted_banks,
+                              base_firm,
+                              base_agent,
+                              defaulted_firms,
+                              firms,
+                              period_t_transactions)
+
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
     max_id_bank = max([int(bank_id[5:]) for bank_id in base_agent.bank_ids])
@@ -146,18 +159,6 @@ for t in range(T):
     # do calculations for next period
     economy_state.get_next_state()
 
-    # get historic values and print control variables for analytics
-    historic_data = analytics(historic_data,
-                              banks,
-                              t,
-                              T,
-                              economy_state,
-                              defaulted_banks,
-                              base_firm,
-                              base_agent,
-                              defaulted_firms,
-                              firms,
-                              period_t_transactions)
 
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")

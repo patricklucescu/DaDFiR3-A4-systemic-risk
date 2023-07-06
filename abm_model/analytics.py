@@ -293,5 +293,3 @@ def udpate_deposits_equity_firm(historic_data_firm_equity,historic_data_firm_mar
 
 
 
-
-
