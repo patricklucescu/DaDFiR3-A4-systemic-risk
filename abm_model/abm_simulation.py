@@ -13,7 +13,7 @@ import numpy as np
 # set up number of firms and banks and other parameters needed
 FIRMS = 500
 BANKS = 20
-T = 100
+T = 10
 covered_cds_prob = 0.0
 naked_cds_prob = 0.0
 
@@ -41,8 +41,7 @@ max_consumption = 1
 logs = []
 historic_data = {}
 
-#TODO: limit firm leverage (tuning parameter)
-#TODO: add logs of defaulted firm oject and bank object
+#  TODO: add logs of defaulted firm oject and bank object
 
 # begin the simulation part
 for t in range(T):

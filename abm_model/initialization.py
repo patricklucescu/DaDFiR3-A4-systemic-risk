@@ -31,6 +31,7 @@ def generate_random_firms_and_banks(firms_ids: list,
     base_agent.change_max_cds_requests(3)
     base_firm.change_market_price(700)
     base_firm.change_min_wage(200)
+    base_firm.change_max_leverage(10)
     base_bank.change_h_theta(0.1)
 
     # create actual firms
