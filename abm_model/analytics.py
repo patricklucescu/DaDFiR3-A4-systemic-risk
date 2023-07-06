@@ -115,14 +115,14 @@ def analytics(historic_data: dict,
 
         ax[1,1].plot(historic_data['total_firmloan'], color=color1)
         ax[1,1].plot(historic_data['total_bankloan'], color=color3)
-        ax[1,1].legend(['Firm Loans Total', 'Interbank Loans Total'])
+        ax[1,1].legend(['Firm Loans Total Notional', 'Interbank Loans Total Notional'])
         ax[1,1].set_ylabel('Loans Total', color=color4)
         ax[1,1].tick_params(axis='y', labelcolor=color4)
         rightAx = ax[1,1].twinx()
         rightAx.plot(historic_data['total_cds_notional'], color=color2)
         rightAx.set_ylabel('CDS Notional', color=color2)
         rightAx.tick_params(axis='y', labelcolor=color2)
-        ax[1,1].set_title("Interest Rates and Spreads")
+        ax[1,1].set_title("Notional Loans and CDS")
 
         ax[0,2].plot(historic_data['bank_equity'], color=color1)
         ax[0,2].set_ylabel('Bank Equity',color=color1)

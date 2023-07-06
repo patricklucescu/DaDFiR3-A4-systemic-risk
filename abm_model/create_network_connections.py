@@ -132,4 +132,6 @@ def create_network_connections(loan_offers: dict,
                             time=t,
                             data=copy.deepcopy(cds_transactions[bank_id])
                         ))
+                break
+
     return firms, banks, interbank_contracts, logs, period_t_transactions

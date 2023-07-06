@@ -39,7 +39,7 @@ def generate_random_firms_and_banks(firms_ids: list,
     productivity = [0.3] * len(firms_ids)
     excess_supply = [100 * x for x in np.random.poisson(4, len(firms_ids))]
     supply = [max(400 * x, 70) for x in np.random.poisson(4, len(firms_ids))]
-    price = [max(base_firm.market_price + np.random.normal(0, 0.3), base_firm.market_price/2)
+    price = [max(base_firm.market_price + np.random.normal(10, 5), base_firm.market_price)
              for x in range(len(firms_ids))]
     wage = [base_firm.min_wage + np.random.exponential(4) for x in range(len(firms_ids))]
     default_probability = [max(x, 0.01) for x in np.random.beta(a=1.9, b=8, size=len(firms_ids))]

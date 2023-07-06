@@ -13,9 +13,9 @@ import numpy as np
 # set up number of firms and banks and other parameters needed
 FIRMS = 500
 BANKS = 20
-T = 50
-covered_cds_prob = 0.2
-naked_cds_prob = 0.05
+T = 100
+covered_cds_prob = 0.0
+naked_cds_prob = 0.0
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
@@ -40,6 +40,9 @@ max_consumption = 1
 # create logs and initialize historic values
 logs = []
 historic_data = {}
+
+#TODO: limit firm leverage (tuning parameter)
+#TODO: add logs of defaulted firm oject and bank object
 
 # begin the simulation part
 for t in range(T):
@@ -115,15 +118,6 @@ for t in range(T):
             data=firm_id
         ))
 
-    # reset banks and firms and remove defaulting ones
-
-    banks = {bank_id: bank_entity for bank_id, bank_entity in banks.items() if bank_id not in defaulted_banks}
-    firms = {firm_id: firm_entity for firm_id, firm_entity in firms.items() if firm_id not in defaulted_firms}
-    for bank_id in banks:
-        banks[bank_id].reset_variables()
-    for firm_id in firms:
-        firms[firm_id].reset_variables()
-
     # get historic values and print control variables for analytics
     historic_data = analytics(historic_data,
                               banks,
@@ -136,6 +130,16 @@ for t in range(T):
                               defaulted_firms,
                               firms,
                               period_t_transactions)
+
+    # reset banks and firms and remove defaulting ones
+    banks = {bank_id: bank_entity for bank_id, bank_entity in banks.items() if bank_id not in defaulted_banks}
+    firms = {firm_id: firm_entity for firm_id, firm_entity in firms.items() if firm_id not in defaulted_firms}
+    for bank_id in banks:
+        banks[bank_id].reset_variables()
+    for firm_id in firms:
+        firms[firm_id].reset_variables()
+
+
 
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])

@@ -110,6 +110,7 @@ class Firm(BaseFirm):
             # loan has not been paid, so we do not have money for all wages
             #  we need to reduce supply
             self.supply = self.equity * self.productivity / self.wage
+            self.total_wages = self.equity
 
     def produce_supply_consumption(self,
                                    min_consumption: float,
