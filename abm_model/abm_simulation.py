@@ -12,11 +12,12 @@ import itertools
 import numpy as np
 
 # set up number of firms and banks and other parameters needed
-FIRMS = 500
+FIRMS = 300
 BANKS = 20
-T = 10
-covered_cds_prob = 0.0
-naked_cds_prob = 0.0
+T = 400
+covered_cds_prob = 0.5
+naked_cds_prob = 0.1
+
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
@@ -33,10 +34,11 @@ economy_state = MarkovModel(starting_prob=starting_prob,
                             states=states)
 
 # good consumption based on economy state
-good_consumption = [0.8, 0.6]
-good_consumption_std = [0.2, 0.3]
-min_consumption = 0.1
+good_consumption = [0.95, 0.90]
+good_consumption_std = [0.1, 0.15]
+min_consumption = 0.85
 max_consumption = 1
+#payout_ratio = [0.75, 0.25]
 
 # create logs and initialize historic values
 logs = []
@@ -91,7 +93,7 @@ for t in range(T):
 
     # do deposit change
     for bank_id in base_agent.bank_ids:
-        rv = np.random.normal(0, 1) / 100
+        rv = np.random.normal(0, 2) / 100
         banks[bank_id].deposit_change = rv * banks[bank_id].deposits
         banks[bank_id].deposits += banks[bank_id].deposit_change
         # TODO: adjust the deposit variable
@@ -138,8 +140,10 @@ for t in range(T):
         banks[bank_id].reset_variables()
     for firm_id in firms:
         firms[firm_id].reset_variables()
-
-
+        if t > 0:
+            dividend = max((firms[firm_id].equity / firms[firm_id].prev_equity) - 1,0)
+            #firms[firm_id].equity -= payout_ratio[economy_state.current_state]*dividend*firms[firm_id].equity
+            firms[firm_id].equity -= 0.15*dividend * firms[firm_id].equity
 
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])

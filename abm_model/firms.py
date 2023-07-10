@@ -78,6 +78,7 @@ class Firm(BaseFirm):
         self.financial_fragility = None
         self.potential_lenders = None
         self.recovery_rate = None
+        self.prev_equity = None
 
     def compute_expected_supply_and_prices(self):
         """
@@ -138,6 +139,7 @@ class Firm(BaseFirm):
         :param overall_consumption: The overall consumption.
         :param consumption_std: The standard deviation of consumption.
         """
+        self.prev_equity = self.equity
         self.equity -= self.total_wages
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)

@@ -27,7 +27,7 @@ def wages_adj() -> float:
 
     :return: Random number.
     """
-    return np.random.uniform(0, max_increase_wages, 1)[0]
+    return np.random.uniform(-max_increase_wages, max_increase_wages, 1)[0]
 
 
 def price_adj() -> float:
