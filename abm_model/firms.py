@@ -10,6 +10,7 @@ class BaseFirm(BaseAgent):
     """
     market_price = None
     min_wage = None
+    max_leverage = None
 
     @classmethod
     def change_market_price(cls, new_value: float):
@@ -28,6 +29,15 @@ class BaseFirm(BaseAgent):
         :param new_value: The new minimum wage.
         """
         cls.min_wage = new_value
+
+    @classmethod
+    def change_max_leverage(cls, new_value: float):
+        """
+        | Change the maximum leverage of the base firm.
+
+        :param new_value: The new maximum leverage.
+        """
+        cls.max_leverage = new_value
 
 
 class Firm(BaseFirm):
@@ -68,6 +78,7 @@ class Firm(BaseFirm):
         self.financial_fragility = None
         self.potential_lenders = None
         self.recovery_rate = None
+        self.prev_equity = None
 
     def compute_expected_supply_and_prices(self):
         """
@@ -80,6 +91,9 @@ class Firm(BaseFirm):
                                                                 self.market_price,
                                                                 self.wage,
                                                                 self.productivity)
+        # make sure firm does not go beyond max leverage
+        self.supply = min([self.productivity * (self.max_leverage + 1) * self.equity / self.wage, self.supply])
+        # compute total wages
         self.total_wages = self.wage * self.supply / self.productivity
 
     def check_loan_desire_and_choose_loans(self):
@@ -110,6 +124,7 @@ class Firm(BaseFirm):
             # loan has not been paid, so we do not have money for all wages
             #  we need to reduce supply
             self.supply = self.equity * self.productivity / self.wage
+            self.total_wages = self.equity
 
     def produce_supply_consumption(self,
                                    min_consumption: float,
@@ -124,6 +139,7 @@ class Firm(BaseFirm):
         :param overall_consumption: The overall consumption.
         :param consumption_std: The standard deviation of consumption.
         """
+        self.prev_equity = self.equity
         self.equity -= self.total_wages
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)

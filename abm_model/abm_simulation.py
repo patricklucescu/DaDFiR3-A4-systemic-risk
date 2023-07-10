@@ -1,3 +1,4 @@
+import copy
 import time
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
 from abm_model.essentials import merge_dict
@@ -14,8 +15,9 @@ import numpy as np
 FIRMS = 300
 BANKS = 20
 T = 400
-covered_cds_prob = 0.8
+covered_cds_prob = 0.5
 naked_cds_prob = 0.1
+
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
@@ -32,14 +34,17 @@ economy_state = MarkovModel(starting_prob=starting_prob,
                             states=states)
 
 # good consumption based on economy state
-good_consumption = [0.8, 0.4]
-good_consumption_std = [0.2, 0.3]
-min_consumption = 0.1
+good_consumption = [0.95, 0.90]
+good_consumption_std = [0.1, 0.15]
+min_consumption = 0.85
 max_consumption = 1
+#payout_ratio = [0.75, 0.25]
 
 # create logs and initialize historic values
 logs = []
 historic_data = {}
+
+#  TODO: add logs of defaulted firm oject and bank object
 
 # begin the simulation part
 for t in range(T):
@@ -88,7 +93,7 @@ for t in range(T):
 
     # do deposit change
     for bank_id in base_agent.bank_ids:
-        rv = np.random.normal(0, 1) / 100
+        rv = np.random.normal(0, 2) / 100
         banks[bank_id].deposit_change = rv * banks[bank_id].deposits
         banks[bank_id].deposits += banks[bank_id].deposit_change
         # TODO: adjust the deposit variable
@@ -106,23 +111,39 @@ for t in range(T):
         logs.append(LogMessage(
             message=f'Firm {firm_id} has defaulted.',
             time=t,
-            data=firm_id
+            data=copy.deepcopy(firms[firm_id])
         ))
     for bank_id in defaulted_banks:
         logs.append(LogMessage(
             message=f'Bank {bank_id} has defaulted.',
             time=t,
-            data=firm_id
+            data=copy.deepcopy(banks[bank_id])
         ))
 
-    # reset banks and firms and remove defaulting ones
+    # get historic values and print control variables for analytics
+    historic_data = analytics(historic_data,
+                              banks,
+                              t,
+                              T,
+                              economy_state,
+                              defaulted_banks,
+                              base_firm,
+                              base_agent,
+                              defaulted_firms,
+                              firms,
+                              period_t_transactions)
 
+    # reset banks and firms and remove defaulting ones
     banks = {bank_id: bank_entity for bank_id, bank_entity in banks.items() if bank_id not in defaulted_banks}
     firms = {firm_id: firm_entity for firm_id, firm_entity in firms.items() if firm_id not in defaulted_firms}
     for bank_id in banks:
         banks[bank_id].reset_variables()
     for firm_id in firms:
         firms[firm_id].reset_variables()
+        if t > 0:
+            dividend = max((firms[firm_id].equity / firms[firm_id].prev_equity) - 1,0)
+            #firms[firm_id].equity -= payout_ratio[economy_state.current_state]*dividend*firms[firm_id].equity
+            firms[firm_id].equity -= 0.15*dividend * firms[firm_id].equity
 
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
@@ -146,18 +167,6 @@ for t in range(T):
     # do calculations for next period
     economy_state.get_next_state()
 
-    # get historic values and print control variables for analytics
-    historic_data = analytics(historic_data,
-                              banks,
-                              t,
-                              T,
-                              economy_state,
-                              defaulted_banks,
-                              base_firm,
-                              base_agent,
-                              defaulted_firms,
-                              firms,
-                              period_t_transactions)
 
     end = time.time()
     print(f"Period {t} finished in {(end-start)/60} minutes")
