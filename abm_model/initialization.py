@@ -1,8 +1,10 @@
 from abm_model.firms import BaseFirm, Firm
 from abm_model.banks import BaseBank, Bank
 from abm_model.baseclass import BaseAgent
+from abm_model.calibration import anaylse_calibration
 import numpy as np
 import random
+
 
 def generate_random_firms_and_banks(firms_ids: list,
                                     banks_ids: list,
@@ -56,7 +58,7 @@ def generate_random_firms_and_banks(firms_ids: list,
     # create actual banks
     banks = {}
     bank_equity = [max(calibration_variables['bank_equity_scaling'] * x, calibration_variables['bank_equity_scaling'] * 0.5) for x in np.random.poisson(calibration_variables['bank_supply_poisson_lambda'], len(banks_ids))]
-    bank_deposit = [x * y for x, y in zip(bank_equity, [random.randint(5,12) for i in range(len(banks_ids))])]
+    bank_deposit = [x * y for x, y in zip(bank_equity, [random.randint(calibration_variables['min_deposit_ratio'],calibration_variables['max_deposit_ratio']) for i in range(len(banks_ids))])]
     for i in range(len(banks_ids)):
         banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],
@@ -64,6 +66,9 @@ def generate_random_firms_and_banks(firms_ids: list,
                                    capital_requirement=calibration_variables['capital_req'],
                                    covered_cds_prob=calibration_variables['covered_cds_prob'],
                                    naked_cds_prob=calibration_variables['naked_cds_prob'])
+
+    anaylse_calibration(calibration_variables, firms, banks)
+
     return firms, banks, base_agent, base_firm, base_bank
 
 
@@ -122,14 +127,14 @@ def generate_new_entities(new_bank_ids: list,
     std_productivity = np.std([firms[firm_id].productivity for firm_id in firms.keys()])
     average_default_prob = np.mean([firms[firm_id].default_probability for firm_id in firms.keys()])
     std_default_prob = np.std([firms[firm_id].default_probability for firm_id in firms.keys()])
-    supply = [max(x, 70) for x in np.random.normal(average_supply, std_supply, len(new_firm_ids))]
+    supply = [max(x, calibration_variables['firm_supply_scaling']) for x in np.random.normal(average_supply, std_supply, len(new_firm_ids))]
     excess_supply = [max(x, 0) for x in np.random.normal(average_ex_supply, std_ex_supply, len(new_firm_ids))]
     price = [max(x, base_firm.market_price / 2) for x in np.random.normal(average_price, std_price, len(new_firm_ids))]
     wage = [max(x, base_firm.min_wage) for x in np.random.normal(average_wage, std_wage, len(new_firm_ids))]
-    firm_equity = [max(x, 100) for x in np.random.normal(average_firm_equity, std_firm_equity, len(new_firm_ids))]
+    firm_equity = [max(x, calibration_variables['firm_equity_scaling'] * 0.5) for x in np.random.normal(average_firm_equity, std_firm_equity, len(new_firm_ids))]
     max_leverage = new_max_leverage
 
-    productivity = [0.3] * len(new_firm_ids)
+    productivity = [calibration_variables['min_productivity']] * len(new_firm_ids)
     for i, firm_id in enumerate(new_firm_ids):
         firms[firm_id] = Firm(
             idx=firm_id,
