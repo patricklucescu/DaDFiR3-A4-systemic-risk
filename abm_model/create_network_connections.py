@@ -93,6 +93,13 @@ def create_network_connections(loan_offers: dict,
                     # determine which banks want cds on this loan
                     interested_cds_buyers = [bank_id for bank_id in banks if
                                              (banks[bank_id].decide_cds(covered=(loan.lender == bank_id)))]
+                    #if every bank wants a naked cds, there are no counterparties. Randomly pick ~75% of banks to be buyers
+                    #and ~25% to be sellers. The covered cds is always included in that case.
+                    interested_naked_cds_buyers = [bank_id for bank_id in interested_cds_buyers if bank_id != loan.lender]
+                    if len(interested_naked_cds_buyers) == (len(banks)-1):
+                        interested_cds_buyers = random.choices(interested_naked_cds_buyers, k=int(round(0.75*len(banks),0)))
+                        interested_cds_buyers.append(loan.lender)
+
                     # for each interested buyer, get offers from various bank according to max_cds_requests,
                     # including only banks that are neither the lender bank itself nor any interested buyer (and
                     # neither the bank as its own counterparty)

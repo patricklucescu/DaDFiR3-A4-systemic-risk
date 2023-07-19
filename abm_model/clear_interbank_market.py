@@ -60,7 +60,7 @@ def clear_interbank_market(banks: dict,
 
     # check defaulting banks now
     defaulted_banks = [banks_idx[idx] for idx in default_set]
-    print(f'default from clearing: {len(defaulted_banks)}')
+    ###print(f'default from clearing: {len(defaulted_banks)}')
     for bank_id in banks_idx:
         money_for_deposits = banks[bank_id].deposits - banks[bank_id].current_deposits - max([banks[bank_id].deposit_change, 0])
         if bank_id in defaulted_banks or banks[bank_id].earnings < money_for_deposits:
@@ -75,5 +75,5 @@ def clear_interbank_market(banks: dict,
             banks[bank_id].deposits = banks[bank_id].current_deposits + max([banks[bank_id].deposit_change, 0])
             banks[bank_id].equity = banks[bank_id].earnings - money_for_deposits
     defaulted_banks = list(np.unique(defaulted_banks))
-    print(f'default total: {len(defaulted_banks)}')
+    ###print(f'default total: {len(defaulted_banks)}')
     return banks, defaulted_banks

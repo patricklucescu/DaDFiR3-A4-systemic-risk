@@ -54,7 +54,7 @@ historic_data = {}
 for t in range(T):
     start = time.time()
     # for each firm compute expected supply and see who wants loans
-    print(f"Period {t}: Compute expected supply and price")
+    ###print(f"Period {t}: Compute expected supply and price")
     for firm_id in firms.keys():
         firms[firm_id].compute_expected_supply_and_prices()
         firms[firm_id].check_loan_desire_and_choose_loans()
@@ -71,7 +71,7 @@ for t in range(T):
     loan_offers = {firm_id: sorted(loan_offers[firm_id], key=lambda y: y.interest_rate) for firm_id in loan_offers}
 
     # start the network allocation of loans and cds
-    print(f"Period {t}: Create network connections")
+    ###print(f"Period {t}: Create network connections")
     firms, banks, interbank_contracts, logs, period_t_transactions = create_network_connections(loan_offers,
                                                                          banks,
                                                                          firms,
@@ -86,7 +86,7 @@ for t in range(T):
 
 
     # Figure out firm default and update CDS recovery rate accordingly
-    print(f"Period {t}: Get defaulting firms")
+    ###print(f"Period {t}: Get defaulting firms")
     firms, banks, defaulted_firms = clear_firm_default(firms,
                                                        banks,
                                                        economy_state,
@@ -97,13 +97,13 @@ for t in range(T):
 
     # do deposit change
     for bank_id in base_agent.bank_ids:
-        rv = np.random.normal(1, 2) / 100
+        rv = np.random.normal(calibration_variables['mu_deposit_growth'], 2) / 100
         banks[bank_id].deposit_change = rv * banks[bank_id].deposits
         banks[bank_id].deposits += banks[bank_id].deposit_change
         # TODO: adjust the deposit variable
 
     # now figure out the banks network payments
-    print(f"Period {t}: Get defaulting banks")
+    ###print(f"Period {t}: Get defaulting banks")
     banks, defaulted_banks = clear_interbank_market(banks,
                                                     firms,
                                                     base_agent.bank_ids,
@@ -147,8 +147,7 @@ for t in range(T):
         firms[firm_id].reset_variables()
         if t > 0:
             dividend = max((firms[firm_id].equity / firms[firm_id].prev_equity) - 1,0)
-            #firms[firm_id].equity -= payout_ratio[economy_state.current_state]*dividend*firms[firm_id].equity
-            firms[firm_id].equity -= 0.25*dividend * firms[firm_id].equity
+            firms[firm_id].equity -= calibration_variables['div_payout_ratio_firms'] * dividend * firms[firm_id].equity
 
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
@@ -172,7 +171,8 @@ for t in range(T):
 
     # do calculations for next period
     economy_state.get_next_state()
-
+    if economy_state.current_state == 2:
+        print(f'recession state in period {t+1}')
 
     end = time.time()
-    print(f"Period {t} finished in {(end-start)/60} minutes")
+    ###print(f"Period {t} finished in {(end-start)/60} minutes")

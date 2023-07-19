@@ -36,7 +36,8 @@ def analytics(historic_data: dict,
     """
     # initialize dictionary
     if len(historic_data) == 0:
-        historic_data['banks_equity'] = {}
+        historic_data['banks_equity_by_time'] = {}
+        historic_data['banks_equity_by_bank'] = {}
         historic_data['market_price'] = []
         historic_data['average_wage'] = []
         historic_data['bank_defaults'] = []
@@ -54,7 +55,8 @@ def analytics(historic_data: dict,
 
 
     #end-of-period reporting
-    historic_data['banks_equity'] = update_bank_equity(historic_data['banks_equity'], banks, t)
+    historic_data['banks_equity_by_time'], historic_data['banks_equity_by_bank'] \
+        = update_bank_equity(historic_data['banks_equity_by_time'], historic_data['banks_equity_by_bank'], banks, t)
     historic_data['market_price'] = update_market_prices(historic_data['market_price'],base_firm)
     historic_data['average_wage'] = udpate_average_wage(historic_data['average_wage'],firms)
     historic_data['bank_defaults'],historic_data['firm_defaults'] \
@@ -154,22 +156,33 @@ def analytics(historic_data: dict,
     return historic_data
 
 
-def update_bank_equity(historic_bank_equity: dict,
+def update_bank_equity(historic_bank_equity_by_time: dict,
+                       historic_bank_equity_by_bank: dict,
                        banks: dict,
-                       t: float) -> dict:
+                       t: float) -> [dict,dict]:
     """
     | Update the historic bank equity data with the current bank equity values.
 
-    :param historic_bank_equity: A dictionary containing the historic bank equity data.
+    :param historic_bank_equity_by_time: A dictionary containing the historic bank equity data sorted by time.
+    :param historic_bank_equity_by_bank: A dictionary containing the historic bank equity data sorted by bank.
     :param banks: A dictionary containing all banks.
     :param t: The current time step.
     :return: The updated historic bank equity data.
     """
-    updated_bank_equity = historic_bank_equity
-    updated_bank_equity.update({t: {}})
+    updated_bank_equity_by_time = historic_bank_equity_by_time
+    updated_bank_equity_by_time.update({t: {}})
     for bank_id in banks:
-        updated_bank_equity[t].update({bank_id: banks[bank_id].equity})
-    return updated_bank_equity
+        updated_bank_equity_by_time[t].update({bank_id: banks[bank_id].equity})
+
+    updated_bank_equity_by_bank = historic_bank_equity_by_bank
+    for bank_id in banks:
+        if (bank_id not in updated_bank_equity_by_bank.keys()) or (t == 0):
+            updated_bank_equity_by_bank.update({bank_id: {}})
+        updated_bank_equity_by_bank[bank_id].update({t: banks[bank_id].equity})
+
+
+
+    return updated_bank_equity_by_time, updated_bank_equity_by_bank
 
 
 def update_market_prices(historic_market_price: list,

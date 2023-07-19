@@ -37,3 +37,4 @@ class MarkovModel:
         """
         self.current_state = random.choices(population=list(self.states.keys()),
                                             weights=self.transition_matrix[self.current_state])[0]
+

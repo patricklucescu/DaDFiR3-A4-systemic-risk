@@ -8,20 +8,20 @@ def get_calibration_variables():
     #agents and time periods
     calibration_variables.update({'FIRMS' : 300})
     calibration_variables.update({'BANKS': 20})
-    calibration_variables.update({'T' : 200})
+    calibration_variables.update({'T' : 300})
 
     #CDS
-    calibration_variables.update({'covered_cds_prob': 0.5})
-    calibration_variables.update({'naked_cds_prob': 0.0})
+    calibration_variables.update({'covered_cds_prob': 0.2})
+    calibration_variables.update({'naked_cds_prob': 0.00})
 
     #Markov Model
-    calibration_variables.update({'transition_matrix': np.array([[0.7, 0.3], [0.8, 0.2]])})
-    calibration_variables.update({'good_consumption': [0.95, 0.90]})
-    calibration_variables.update({'good_consumption_std': [0.1, 0.15]})
-    calibration_variables.update({'min_consumption': 0.85})
+    calibration_variables.update({'transition_matrix': np.array([[0.7, 0.25, 0.05], [0.8, 0.15, 0.05], [0.00, 0.5, 0.5]])})
+    calibration_variables.update({'good_consumption': [0.98, 0.95, 0.9]})
+    calibration_variables.update({'good_consumption_std': [0.1, 0.15, 0.5]})
+    calibration_variables.update({'min_consumption': 0.80})
     calibration_variables.update({'max_consumption': 1})
-    calibration_variables.update({'starting_prob': [1, 0]})
-    calibration_variables.update({'states': {0: 'good', 1: 'bad'}})
+    calibration_variables.update({'starting_prob': [1, 0, 0]})
+    calibration_variables.update({'states': {0: 'good', 1: 'bad', 2: 'recession'}})
 
     #Base agent
     calibration_variables.update({'policy_rate': 0.02})
@@ -42,6 +42,7 @@ def get_calibration_variables():
     calibration_variables.update({'firm_supply_poisson_lambda': 4})
     calibration_variables.update({'firm_supply_scaling': 300000})
     calibration_variables.update({'firm_init_excess_supply_prob': 0.3})
+    calibration_variables.update({'div_payout_ratio_firms': 0.85})
 
     #Base-Bank
     calibration_variables.update({'h_theta': 0.1})
@@ -52,6 +53,8 @@ def get_calibration_variables():
     calibration_variables.update({'bank_supply_poisson_lambda': 4})
     calibration_variables.update({'min_deposit_ratio': 5})
     calibration_variables.update({'max_deposit_ratio': 12})
+    calibration_variables.update({'mu_deposit_growth': 1})
+
 
     return calibration_variables
 
