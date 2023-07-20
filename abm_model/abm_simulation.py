@@ -47,6 +47,7 @@ max_consumption = calibration_variables['max_consumption']
 # create logs and initialize historic values
 logs = []
 historic_data = {}
+statement_counter = {1: 0, 2: 0, 3: 0, 4: 0}
 
 #  TODO: add logs of defaulted firm oject and bank object
 
@@ -58,6 +59,15 @@ for t in range(T):
     for firm_id in firms.keys():
         firms[firm_id].compute_expected_supply_and_prices()
         firms[firm_id].check_loan_desire_and_choose_loans()
+
+        if (firms[firm_id].excess_supply > 0 and firms[firm_id].price >= base_firm.market_price):
+            statement_counter[1] += 1
+        if (firms[firm_id].excess_supply == 0 and firms[firm_id].price < base_firm.market_price):
+            statement_counter[2] += 1
+        if (firms[firm_id].excess_supply > 0 and firms[firm_id].price < base_firm.market_price):
+            statement_counter[3] += 1
+        if (firms[firm_id].excess_supply == 0 and firms[firm_id].price >= base_firm.market_price):
+            statement_counter[4] += 1
 
     # iterate through banks and see which ones accept the loans
     loan_requests = merge_dict(list(itertools.chain(*[[{loan.lender: loan} for loan in firms[firm_id].potential_lenders]
@@ -84,7 +94,6 @@ for t in range(T):
     # compute market price
     base_firm.change_market_price(sum([firm.price * firm.supply for _, firm in firms.items()]) / sum([firm.supply for _, firm in firms.items()]))
 
-
     # Figure out firm default and update CDS recovery rate accordingly
     ###print(f"Period {t}: Get defaulting firms")
     firms, banks, defaulted_firms = clear_firm_default(firms,
@@ -97,7 +106,7 @@ for t in range(T):
 
     # do deposit change
     for bank_id in base_agent.bank_ids:
-        rv = np.random.normal(calibration_variables['mu_deposit_growth'], 2) / 100
+        rv = np.random.normal(calibration_variables['mu_deposit_growth'], calibration_variables['std_deposit_growth']) / 100
         banks[bank_id].deposit_change = rv * banks[bank_id].deposits
         banks[bank_id].deposits += banks[bank_id].deposit_change
         # TODO: adjust the deposit variable
@@ -171,8 +180,8 @@ for t in range(T):
 
     # do calculations for next period
     economy_state.get_next_state()
-    if economy_state.current_state == 2:
-        print(f'recession state in period {t+1}')
 
     end = time.time()
     ###print(f"Period {t} finished in {(end-start)/60} minutes")
+
+print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')

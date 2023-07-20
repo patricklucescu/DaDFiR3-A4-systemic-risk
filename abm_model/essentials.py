@@ -1,11 +1,9 @@
 import numpy as np
 from collections import defaultdict
 
-
 max_increase_wages = 0.05
 max_increase_prices = 0.1
 max_increase_quantity = 0.1
-
 
 def merge_dict(list_dict: list[dict]) -> dict:
     """
@@ -75,4 +73,8 @@ def compute_expected_supply_price(excess_supply: float,
     else:
         price = prev_price
         supply = prev_supply * (1 + supply_adj() * [-1 if statement_3 else 1][0])
+
+
+
+
     return price, supply

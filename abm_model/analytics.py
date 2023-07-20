@@ -53,6 +53,8 @@ def analytics(historic_data: dict,
         historic_data['firm_equity'] = []
         historic_data['firm_market_power'] = []
 
+        historic_data['SRISK_by_'] = []
+
 
     #end-of-period reporting
     historic_data['banks_equity_by_time'], historic_data['banks_equity_by_bank'] \
