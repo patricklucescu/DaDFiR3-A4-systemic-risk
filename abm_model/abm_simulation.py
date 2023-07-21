@@ -11,6 +11,7 @@ from abm_model.logs import LogMessage
 from abm_model.calibration import *
 import itertools
 import numpy as np
+import matplotlib.pyplot as plt
 
 #get calibration variables for initialization and markov model
 calibration_variables = get_calibration_variables()
@@ -47,9 +48,12 @@ max_consumption = calibration_variables['max_consumption']
 # create logs and initialize historic values
 logs = []
 historic_data = {}
+market_data = {}
 statement_counter = {1: 0, 2: 0, 3: 0, 4: 0}
+loan_desire = []
+total_wages = []
 
-#  TODO: add logs of defaulted firm oject and bank object
+#  TODO: add logs of defaulted firm object and bank object
 
 # begin the simulation part
 for t in range(T):
@@ -68,6 +72,11 @@ for t in range(T):
             statement_counter[3] += 1
         if (firms[firm_id].excess_supply == 0 and firms[firm_id].price >= base_firm.market_price):
             statement_counter[4] += 1
+
+    loan_desire_firms = firms
+
+    loan_desire.append(sum([firms[firm_id].credit_demand for firm_id in firms]))
+    total_wages.append(sum([firms[firm_id].total_wages for firm_id in firms]))
 
     # iterate through banks and see which ones accept the loans
     loan_requests = merge_dict(list(itertools.chain(*[[{loan.lender: loan} for loan in firms[firm_id].potential_lenders]
@@ -91,8 +100,10 @@ for t in range(T):
                                                                          naked_cds_prob,
                                                                          t)
 
+    loan_granted_firms = firms
+
     # compute market price
-    base_firm.change_market_price(sum([firm.price * firm.supply for _, firm in firms.items()]) / sum([firm.supply for _, firm in firms.items()]))
+    base_firm.change_market_price(np.median([firm.price for _, firm in firms.items()]))
 
     # Figure out firm default and update CDS recovery rate accordingly
     ###print(f"Period {t}: Get defaulting firms")
@@ -144,7 +155,9 @@ for t in range(T):
                               base_agent,
                               defaulted_firms,
                               firms,
-                              period_t_transactions)
+                              period_t_transactions,
+                              loan_desire_firms,
+                              loan_granted_firms)
 
     # reset banks and firms and remove defaulting ones
     banks = {bank_id: bank_entity for bank_id, bank_entity in banks.items() if bank_id not in defaulted_banks}
@@ -168,6 +181,7 @@ for t in range(T):
                                          new_firm_ids,
                                          banks,
                                          firms,
+                                         defaulted_firms_entities,
                                          base_firm,
                                          calibration_variables,
                                          new_max_leverage)
@@ -183,5 +197,11 @@ for t in range(T):
 
     end = time.time()
     ###print(f"Period {t} finished in {(end-start)/60} minutes")
+
+
+# plt.plot(loan_desire)
+# plt.plot(total_wages)
+
+plt.show()
 
 print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')

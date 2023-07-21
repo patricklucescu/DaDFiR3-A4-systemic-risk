@@ -12,6 +12,7 @@ class BaseFirm(BaseAgent):
     min_wage = None
     min_max_leverage = None
     max_max_leverage = None
+    probability_excess_supply_zero = None
 
     @classmethod
     def change_market_price(cls, new_value: float):
@@ -49,6 +50,14 @@ class BaseFirm(BaseAgent):
         """
         cls.max_max_leverage = new_value
 
+    @classmethod
+    def change_prob_excess_supply(cls, new_value: int):
+        """
+        | Change the maximum leverage of the base firm.
+
+        :param new_value: The new maximum leverage.
+        """
+        cls.probability_excess_supply_zero = new_value
 
 class Firm(BaseFirm):
     def __init__(self,
@@ -104,7 +113,8 @@ class Firm(BaseFirm):
                                                                 self.price,
                                                                 self.market_price,
                                                                 self.wage,
-                                                                self.productivity)
+                                                                self.productivity,
+                                                                self.probability_excess_supply_zero)
         # make sure firm does not go beyond max leverage
         self.supply = min([self.productivity * (self.max_leverage + 1) * self.equity / self.wage, self.supply])
         # compute total wages

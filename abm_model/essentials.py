@@ -51,7 +51,8 @@ def compute_expected_supply_price(excess_supply: float,
                                   prev_price: float,
                                   market_price: float,
                                   wage: float,
-                                  productivity: float) -> tuple:
+                                  productivity: float,
+                                  probability_excess_supply_zero: float) -> tuple:
     """
     | Compute expected supply and price based on the book Macroeconomics from Bottom-up by Gatti et al. (2011)  page 55.
 
@@ -61,6 +62,7 @@ def compute_expected_supply_price(excess_supply: float,
     :param market_price: Previous period market price.
     :param wage: Current wage.
     :param productivity: Current firm productivity.
+    :param probability_excess_supply_zero from markov model
     :return: price and supply for current period.
     """
     statement_1 = (excess_supply > 0 and prev_price >= market_price)
@@ -72,7 +74,7 @@ def compute_expected_supply_price(excess_supply: float,
         price = max([prev_price * (1 + price_adj() * [-1 if statement_1 else 1][0]), wage/productivity])
     else:
         price = prev_price
-        supply = prev_supply * (1 + supply_adj() * [-1 if statement_3 else 1][0])
+        supply = prev_supply * (1 + supply_adj() * [-probability_excess_supply_zero/(1-probability_excess_supply_zero) if statement_3 else 1][0])
 
 
 

@@ -17,7 +17,9 @@ def analytics(historic_data: dict,
               base_agent: BaseAgent,
               defaulted_firms: list,
               firms: dict,
-              period_t_transactions: list) -> dict:
+              period_t_transactions: list,
+              loan_desire_firms: list,
+              loan_granted_firms: list) -> dict:
     """
     | Perform analytics and update historic data during the simulation.
 
@@ -52,6 +54,10 @@ def analytics(historic_data: dict,
         historic_data['bank_deposits'] = []
         historic_data['firm_equity'] = []
         historic_data['firm_market_power'] = []
+        historic_data['loans_desired'] = []
+        historic_data['total_wages'] = []
+        historic_data['supply'] = []
+
 
         historic_data['SRISK_by_'] = []
 
@@ -77,11 +83,13 @@ def analytics(historic_data: dict,
                                              ,base_agent)
     historic_data['bank_equity'],historic_data['bank_deposits'] = udpate_deposits_equity_bank(historic_data['bank_equity'],historic_data['bank_deposits'],banks)
     historic_data['firm_equity'],historic_data['firm_market_power'] = udpate_deposits_equity_firm(historic_data['firm_equity'],historic_data['firm_market_power'],firms)
+    historic_data['loans_desired'],historic_data['total_wages'],historic_data['supply'] \
+        = start_of_period_analysis(historic_data['loans_desired'],historic_data['total_wages'],historic_data['supply'],loan_granted_firms,loan_desire_firms)
 
     #end-of-simulation reporting
     if t==(T-1):
-        fig, ax = plt.subplots(2, 3)
-        fig.set_size_inches(25, 12)
+        fig, ax = plt.subplots(3, 3)
+        fig.set_size_inches(25, 20)
 
         color1='blue'
         color2='orange'
@@ -145,6 +153,29 @@ def analytics(historic_data: dict,
         rightAx.set_ylabel('Fraction Largest Firm', color=color2)
         rightAx.tick_params(axis='y', labelcolor=color2)
         ax[1,2].set_title("Firm Equity and Market Power")
+
+        ax[2,0].plot(historic_data['loans_desired'], color=color1)
+        ax[2,0].plot(historic_data['total_firmloan'], color=color3)
+        ax[2,0].legend(['Firm Loan Desired', 'Firm Loan Granted'])
+        ax[2,0].set_ylabel('Loans', color=color4)
+        ax[2,0].tick_params(axis='y', labelcolor=color4)
+        ax[2,0].set_title("Loan Desire and Loans Granted")
+
+        ax[2, 1].plot(historic_data['loans_desired'], color=color4)
+        ax[2, 1].set_ylabel('Loans', color=color4)
+        ax[2, 1].tick_params(axis='y', labelcolor=color4)
+        rightAx = ax[2, 1].twinx()
+        rightAx.plot(historic_data['supply'], color=color3)
+        rightAx.set_ylabel('Firm Supply', color=color3)
+        rightAx.tick_params(axis='y', labelcolor=color3)
+        ax[2, 1].set_title("Loan Desire and Firm Supply")
+
+        # ax[2, 2].plot(historic_data['loans_desired'], color=color1)
+        # ax[2, 2].plot(historic_data['total_firmloan'], color=color3)
+        # ax[2, 2].legend(['Firm Loan Desired', 'Firm Loan Granted'])
+        # ax[2, 2].set_ylabel('Loans', color=color4)
+        # ax[2, 2].tick_params(axis='y', labelcolor=color4)
+        # ax[2, 2].set_title("Loan Desire and Loans Granted")
         plt.show()
 
         print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids)-1]}')
@@ -304,6 +335,18 @@ def udpate_deposits_equity_firm(historic_data_firm_equity,historic_data_firm_mar
     historic_data_firm_market_power.append(max([firms[firm_id].equity for firm_id in firms])/total_equity)
 
     return historic_data_firm_equity,historic_data_firm_market_power
+
+
+
+def start_of_period_analysis(historic_data_loans_desired,historic_data_total_wages,historic_data_supply,loan_granted_firms,loan_desire_firms):
+
+    historic_data_loans_desired.append(sum([loan_desire_firms[firm_id].credit_demand for firm_id in loan_desire_firms]))
+    historic_data_total_wages.append(sum([loan_desire_firms[firm_id].total_wages for firm_id in loan_desire_firms]))
+    historic_data_supply.append(sum([loan_granted_firms[firm_id].supply for firm_id in loan_granted_firms]))
+
+
+    return historic_data_loans_desired,historic_data_total_wages,historic_data_supply
+
 
 
 

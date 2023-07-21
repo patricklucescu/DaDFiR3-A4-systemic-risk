@@ -57,8 +57,12 @@ def generate_random_firms_and_banks(firms_ids: list,
 
     # create actual banks
     banks = {}
-    bank_equity = [max(calibration_variables['bank_equity_scaling'] * x, calibration_variables['bank_equity_scaling'] * 0.5) for x in np.random.poisson(calibration_variables['bank_supply_poisson_lambda'], len(banks_ids))]
-    bank_deposit = [x * y for x, y in zip(bank_equity, [random.randint(calibration_variables['min_deposit_ratio'],calibration_variables['max_deposit_ratio']) for i in range(len(banks_ids))])]
+    bank_equity = [float(max(calibration_variables['bank_equity_scaling'] * x, calibration_variables['bank_equity_scaling'] * 0.5)) for x in np.random.poisson(calibration_variables['bank_supply_poisson_lambda'], len(banks_ids))]
+    bank_deposit = [bank_equity[i] * random.randint(calibration_variables['min_deposit_ratio'],
+                                                    calibration_variables['max_deposit_ratio'])
+                                                    for i in range(0,len(bank_equity))]
+
+
     for i in range(len(banks_ids)):
         banks[banks_ids[i]] = Bank(idx=banks_ids[i],
                                    equity=bank_equity[i],
@@ -67,7 +71,9 @@ def generate_random_firms_and_banks(firms_ids: list,
                                    covered_cds_prob=calibration_variables['covered_cds_prob'],
                                    naked_cds_prob=calibration_variables['naked_cds_prob'])
 
-    anaylse_calibration(calibration_variables, firms, banks)
+    probability_excess_supply_zero = anaylse_calibration(calibration_variables, firms, banks)
+
+    base_firm.change_prob_excess_supply(probability_excess_supply_zero)
 
     return firms, banks, base_agent, base_firm, base_bank
 
@@ -76,6 +82,7 @@ def generate_new_entities(new_bank_ids: list,
                           new_firm_ids: list,
                           banks: dict,
                           firms: dict,
+                          defaulted_firms_entities: dict,
                           base_firm: BaseFirm,
                           calibration_variables: dict,
                           new_max_leverage: list) -> tuple:
@@ -86,6 +93,7 @@ def generate_new_entities(new_bank_ids: list,
     :param new_firm_ids: A list of new firm IDs.
     :param banks: A dictionary of existing banks.
     :param firms: A dictionary of existing firms.
+    :param defaulted_firms_entities: A dictionary of defaulted firms
     :param base_firm: The base firm object.
     :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used.
     :param naked_cds_prob: The probability of a naked CDS being used.
@@ -113,20 +121,20 @@ def generate_new_entities(new_bank_ids: list,
                               covered_cds_prob=covered_cds_prob,
                               naked_cds_prob=naked_cds_prob)
     # for firm generation
-    average_supply = np.mean([firms[firm_id].supply for firm_id in firms.keys()])
-    std_supply = np.std([firms[firm_id].supply for firm_id in firms.keys()])
-    average_ex_supply = np.mean([firms[firm_id].excess_supply for firm_id in firms.keys()])
-    std_ex_supply = np.std([firms[firm_id].excess_supply for firm_id in firms.keys()])
-    average_price = np.mean([firms[firm_id].price for firm_id in firms.keys()])
-    std_price = np.std([firms[firm_id].price for firm_id in firms.keys()])
-    average_wage = np.mean([firms[firm_id].wage for firm_id in firms.keys()])
-    std_wage = np.std([firms[firm_id].wage for firm_id in firms.keys()])
-    average_firm_equity = np.mean([firms[firm_id].equity for firm_id in firms.keys()])
-    std_firm_equity = np.std([firms[firm_id].equity for firm_id in firms.keys()])
-    average_productivity = np.mean([firms[firm_id].productivity for firm_id in firms.keys()])
-    std_productivity = np.std([firms[firm_id].productivity for firm_id in firms.keys()])
-    average_default_prob = np.mean([firms[firm_id].default_probability for firm_id in firms.keys()])
-    std_default_prob = np.std([firms[firm_id].default_probability for firm_id in firms.keys()])
+    average_supply = np.mean([defaulted_firms_entities[firm_id].supply for firm_id in defaulted_firms_entities.keys()])
+    std_supply = np.std([defaulted_firms_entities[firm_id].supply for firm_id in defaulted_firms_entities.keys()])
+    average_ex_supply = np.mean([defaulted_firms_entities[firm_id].excess_supply for firm_id in defaulted_firms_entities.keys()])
+    std_ex_supply = np.std([defaulted_firms_entities[firm_id].excess_supply for firm_id in defaulted_firms_entities.keys()])
+    average_price = np.mean([defaulted_firms_entities[firm_id].price for firm_id in defaulted_firms_entities.keys()])
+    std_price = np.std([defaulted_firms_entities[firm_id].price for firm_id in defaulted_firms_entities.keys()])
+    average_wage = np.mean([defaulted_firms_entities[firm_id].wage for firm_id in defaulted_firms_entities.keys()])
+    std_wage = np.std([defaulted_firms_entities[firm_id].wage for firm_id in defaulted_firms_entities.keys()])
+    average_firm_equity = np.mean([defaulted_firms_entities[firm_id].equity for firm_id in defaulted_firms_entities.keys()])
+    std_firm_equity = np.std([defaulted_firms_entities[firm_id].equity for firm_id in defaulted_firms_entities.keys()])
+    average_productivity = np.mean([defaulted_firms_entities[firm_id].productivity for firm_id in defaulted_firms_entities.keys()])
+    std_productivity = np.std([defaulted_firms_entities[firm_id].productivity for firm_id in defaulted_firms_entities.keys()])
+    average_default_prob = np.mean([defaulted_firms_entities[firm_id].default_probability for firm_id in defaulted_firms_entities.keys()])
+    std_default_prob = np.std([defaulted_firms_entities[firm_id].default_probability for firm_id in defaulted_firms_entities.keys()])
     supply = [max(x, calibration_variables['firm_supply_scaling']) for x in np.random.normal(average_supply, std_supply, len(new_firm_ids))]
     excess_supply = [max(x, 0) for x in np.random.normal(average_ex_supply, std_ex_supply, len(new_firm_ids))]
     price = [max(x, base_firm.market_price / 2) for x in np.random.normal(average_price, std_price, len(new_firm_ids))]
