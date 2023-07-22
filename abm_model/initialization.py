@@ -39,15 +39,16 @@ def generate_random_firms_and_banks(firms_ids: list,
     firm_equity = [max(calibration_variables['firm_equity_scaling'] * x, calibration_variables['firm_equity_scaling'] * 0.5) for x in np.random.poisson(calibration_variables['firm_equity_poisson_lambda'], len(firms_ids))]
     productivity = [calibration_variables['min_productivity']] * len(firms_ids)
     excess_supply = [x for x in np.random.binomial(1, calibration_variables['firm_init_excess_supply_prob'], len(firms_ids))]
-    supply = [max(calibration_variables['firm_supply_scaling'] * x, calibration_variables['firm_supply_scaling'] * 0.5) for x in np.random.poisson(calibration_variables['firm_supply_poisson_lambda'], len(firms_ids))]
+    max_leverage = [random.randint(base_firm.min_max_leverage, base_firm.max_max_leverage) for i in
+                    range(len(firms_ids))]
     wage = [base_firm.min_wage + abs(np.random.normal(base_firm.min_wage*0.2,(base_firm.min_wage*0.2)**0.5)) for x in range(len(firms_ids))]
-    max_leverage = [random.randint(base_firm.min_max_leverage,base_firm.max_max_leverage) for i in range(len(firms_ids))]
+    supply = [max(calibration_variables['firm_supply_scaling'] * x, calibration_variables['firm_supply_scaling'] * 0.5) for x in np.random.poisson(calibration_variables['firm_supply_poisson_lambda'], len(firms_ids))]
     for i in range(len(firms_ids)):
         firms[firms_ids[i]] = Firm(
             idx=firms_ids[i],
             supply=supply[i],
             excess_supply=excess_supply[i],
-            price=max(base_firm.market_price + np.random.normal(base_firm.market_price*0.2, (base_firm.market_price*0.2)**0.5), wage[i]/productivity[i]),
+            price=base_firm.market_price + np.random.normal(base_firm.market_price*0.2, (base_firm.market_price*0.2)**0.5),
             wage=wage[i],
             equity=firm_equity[i],
             productivity=productivity[i],

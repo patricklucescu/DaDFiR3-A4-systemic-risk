@@ -107,7 +107,7 @@ class Firm(BaseFirm):
         """
         | Compute the expected supply and prices for the firm.
         """
-        self.wage = max([self.min_wage, self.wage * (1 + wages_adj())])
+        self.wage = self.wage * (1 + wages_adj())
         self.price, self.supply = compute_expected_supply_price(self.excess_supply,
                                                                 self.supply,
                                                                 self.price,
@@ -119,7 +119,6 @@ class Firm(BaseFirm):
         self.supply = min([self.productivity * (self.max_leverage + 1) * self.equity / self.wage, self.supply])
         # compute total wages
         self.total_wages = self.wage * self.supply / self.productivity
-
     def check_loan_desire_and_choose_loans(self):
         """
         | Check if the firm has a desire for loans and choose potential lenders.
