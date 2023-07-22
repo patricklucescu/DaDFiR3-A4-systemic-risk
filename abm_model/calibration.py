@@ -13,27 +13,27 @@ def get_calibration_variables():
 
     #CDS
     calibration_variables.update({'covered_cds_prob': 0.25})
-    calibration_variables.update({'naked_cds_prob': 0.1})
+    calibration_variables.update({'naked_cds_prob': 0.0})
 
     #Markov Model
-    calibration_variables.update({'transition_matrix': np.array([[0.7, 0.3], [0.8, 0.2]])})
-    calibration_variables.update({'good_consumption': [0.99, 0.975]})
+    calibration_variables.update({'transition_matrix': np.array([[0.8, 0.2], [0.5, 0.5]])})
+    calibration_variables.update({'good_consumption': [0.975, 0.925]})
     calibration_variables.update({'good_consumption_std': [0.05, 0.05]})
-    calibration_variables.update({'min_consumption': 0.95})
+    calibration_variables.update({'min_consumption': 0.875})
     calibration_variables.update({'max_consumption': 1})
     calibration_variables.update({'starting_prob': [1, 0]})
     calibration_variables.update({'states': {0: 'good', 1: 'bad'}})
 
     #Base agent
-    calibration_variables.update({'policy_rate': 0.02})
-    calibration_variables.update({'max_bank_loan': 3})
+    calibration_variables.update({'policy_rate': 0.025})
+    calibration_variables.update({'max_bank_loan': 5})
     calibration_variables.update({'max_interbank_loan': 3})
     calibration_variables.update({'max_cds_requests': 3})
 
     #Base-Firm
     calibration_variables.update({'min_productivity': 0.3})
     calibration_variables.update({'min_wage': 200})
-    calibration_variables.update({'min_max_leverage': 5})
+    calibration_variables.update({'min_max_leverage': 2})
     calibration_variables.update({'max_max_leverage': 15})
     calibration_variables.update({'leverage_severity': 0.30})
 
@@ -43,19 +43,19 @@ def get_calibration_variables():
     calibration_variables.update({'firm_supply_poisson_lambda': 4})
     calibration_variables.update({'firm_supply_scaling': 15000})
     calibration_variables.update({'firm_init_excess_supply_prob': 0.25})
-    calibration_variables.update({'div_payout_ratio_firms': 0.85})
+    #calibration_variables.update({'div_payout_ratio_firms': 0.0})
 
     #Base-Bank
     calibration_variables.update({'h_theta': 0.1})
 
     #Banks
-    calibration_variables.update({'capital_req': 0.9})
+    calibration_variables.update({'capital_req': 0.85})
     calibration_variables.update({'bank_equity_scaling': 20000000})
     calibration_variables.update({'bank_supply_poisson_lambda': 4})
     calibration_variables.update({'min_deposit_ratio': 5})
     calibration_variables.update({'max_deposit_ratio': 12})
-    calibration_variables.update({'mu_deposit_growth': 0})
-    calibration_variables.update({'std_deposit_growth': 1.5})
+    calibration_variables.update({'mu_deposit_growth': 0.0})
+    calibration_variables.update({'std_deposit_growth': 3})
 
 
     return calibration_variables

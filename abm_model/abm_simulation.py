@@ -58,9 +58,12 @@ total_wages = []
 # begin the simulation part
 for t in range(T):
     start = time.time()
+
+    start_of_period_firm_equity = sum([firms[firm_id].equity for firm_id in firms])
     # for each firm compute expected supply and see who wants loans
     ###print(f"Period {t}: Compute expected supply and price")
     for firm_id in firms.keys():
+        firms[firm_id].prev_equity = firms[firm_id].equity
         firms[firm_id].compute_expected_supply_and_prices()
         firms[firm_id].check_loan_desire_and_choose_loans()
 
@@ -74,9 +77,6 @@ for t in range(T):
             statement_counter[4] += 1
 
     loan_desire_firms = firms
-
-    loan_desire.append(sum([firms[firm_id].credit_demand for firm_id in firms]))
-    total_wages.append(sum([firms[firm_id].total_wages for firm_id in firms]))
 
     # iterate through banks and see which ones accept the loans
     loan_requests = merge_dict(list(itertools.chain(*[[{loan.lender: loan} for loan in firms[firm_id].potential_lenders]
@@ -113,7 +113,8 @@ for t in range(T):
                                                        good_consumption,
                                                        good_consumption_std,
                                                        min_consumption,
-                                                       max_consumption)
+                                                       max_consumption,
+                                                       calibration_variables['firm_equity_scaling'])
 
     # do deposit change
     for bank_id in base_agent.bank_ids:
@@ -163,13 +164,11 @@ for t in range(T):
     banks = {bank_id: bank_entity for bank_id, bank_entity in banks.items() if bank_id not in defaulted_banks}
     defaulted_firms_entities = {firm_id: firm_entity for firm_id, firm_entity in firms.items() if firm_id in defaulted_firms}
     firms = {firm_id: firm_entity for firm_id, firm_entity in firms.items() if firm_id not in defaulted_firms}
+
     for bank_id in banks:
         banks[bank_id].reset_variables()
     for firm_id in firms:
         firms[firm_id].reset_variables()
-        if t > 0:
-            dividend = max((firms[firm_id].equity / firms[firm_id].prev_equity) - 1,0)
-            firms[firm_id].equity -= calibration_variables['div_payout_ratio_firms'] * dividend * firms[firm_id].equity
 
     # create new bank entities and update the bank and firm ids list in the base agent
     max_id_firm = max([int(firm_id[5:]) for firm_id in base_agent.firm_ids])
@@ -185,6 +184,15 @@ for t in range(T):
                                          base_firm,
                                          calibration_variables,
                                          new_max_leverage)
+
+    # regulate firm equity to be constant over time
+    end_of_period_firm_equity = sum([firms[firm_id].equity for firm_id in firms])
+    # dividend or share issues
+    required_equity_correction = end_of_period_firm_equity / start_of_period_firm_equity
+    #apply equity correction and calculate net-equity "profit"
+    for firm_id in firms:
+           firms[firm_id].equity = (1/required_equity_correction) * firms[firm_id].equity * (1 + np.random.normal(0,0.01))
+           firms[firm_id].profit = float(firms[firm_id].equity / firms[firm_id].prev_equity - 1)
 
     # update base agent for new IDs
     updated_firm_ids = [firm_id for firm_id in (base_agent.firm_ids + new_firm_ids) if firm_id not in defaulted_firms]

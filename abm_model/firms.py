@@ -100,21 +100,23 @@ class Firm(BaseFirm):
         self.financial_fragility = None
         self.potential_lenders = None
         self.recovery_rate = None
-        self.prev_equity = None
+        self.prev_equity = equity
+        self.profit = 0
 
 
     def compute_expected_supply_and_prices(self):
         """
         | Compute the expected supply and prices for the firm.
         """
-        self.wage = self.wage * (1 + wages_adj())
+        self.wage = max([self.min_wage, self.wage * (1 + wages_adj())])
         self.price, self.supply = compute_expected_supply_price(self.excess_supply,
                                                                 self.supply,
                                                                 self.price,
                                                                 self.market_price,
                                                                 self.wage,
                                                                 self.productivity,
-                                                                self.probability_excess_supply_zero)
+                                                                self.probability_excess_supply_zero,
+                                                                self.profit)
         # make sure firm does not go beyond max leverage
         self.supply = min([self.productivity * (self.max_leverage + 1) * self.equity / self.wage, self.supply])
         # compute total wages
@@ -162,7 +164,7 @@ class Firm(BaseFirm):
         :param overall_consumption: The overall consumption.
         :param consumption_std: The standard deviation of consumption.
         """
-        self.prev_equity = self.equity
+
         self.equity -= self.total_wages
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)
