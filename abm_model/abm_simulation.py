@@ -214,8 +214,7 @@ for t in range(T):
 plt.show()
 print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')
 
-srisk_by_time, srisk_by_bank = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],
-                                               historic_data['banks_debt_by_time'],historic_data['banks_debt_by_bank'])
+srisk_by_time, srisk_by_bank = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
 
 
