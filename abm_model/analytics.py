@@ -40,6 +40,8 @@ def analytics(historic_data: dict,
     if len(historic_data) == 0:
         historic_data['banks_equity_by_time'] = {}
         historic_data['banks_equity_by_bank'] = {}
+        historic_data['banks_debt_by_time'] = {}
+        historic_data['banks_debt_by_bank'] = {}
         historic_data['market_price'] = []
         historic_data['average_wage'] = []
         historic_data['bank_defaults'] = []

@@ -17,9 +17,9 @@ def get_calibration_variables():
 
     #Markov Model
     calibration_variables.update({'transition_matrix': np.array([[0.8, 0.2], [0.5, 0.5]])})
-    calibration_variables.update({'good_consumption': [0.975, 0.925]})
+    calibration_variables.update({'good_consumption': [0.975, 0.95]})
     calibration_variables.update({'good_consumption_std': [0.05, 0.05]})
-    calibration_variables.update({'min_consumption': 0.875})
+    calibration_variables.update({'min_consumption': 0.90})
     calibration_variables.update({'max_consumption': 1})
     calibration_variables.update({'starting_prob': [1, 0]})
     calibration_variables.update({'states': {0: 'good', 1: 'bad'}})
