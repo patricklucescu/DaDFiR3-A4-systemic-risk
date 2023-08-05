@@ -208,13 +208,9 @@ for t in range(T):
     ###print(f"Period {t} finished in {(end-start)/60} minutes")
 
 
-# plt.plot(loan_desire)
-# plt.plot(total_wages)
-
-plt.show()
 print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')
 
-SRISK = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
+srisk = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
 
 
