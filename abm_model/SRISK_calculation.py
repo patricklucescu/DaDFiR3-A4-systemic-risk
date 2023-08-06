@@ -8,7 +8,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
 
     #%% Variable initialization
     #conditional market shortfall
-    c = -0.15
+    c = -0.10
     #prudential capital fraction
     k = 0.08
     #h-period LRMES
@@ -17,7 +17,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     S = 1000
 
     srisk_calculation_start = 280
-    nperiods_rolling_window = 150
+    nperiods_rolling_window = 30
     dcc_garch_calibration = 30
 
     lrmes = pd.DataFrame(index=list((equity_by_time.keys())), columns=equity_by_bank.keys())
@@ -65,6 +65,8 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
 
     #%% construction of standardized innovations
     for bank_id in equity_by_bank:
+
+        print(f'{bank_id} in innovation sequences')
 
         dcc_garch_starting_period = srisk_calculation_start - nperiods_rolling_window - dcc_garch_calibration
 
@@ -140,7 +142,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
             current_adjusted_returns = current_innovation_sequence_and_adjusted_returns[['market_return', bank_id+'_vola_adjusted']]
 
             #if we have valid (i.e. long enough) sequence, calculate LRMES for that sequence
-            if len(current_innovation_sequence[:][bank_id]) == nperiods_rolling_window:
+            if len(current_innovation_sequence[:][bank_id]) >= nperiods_rolling_window:
 
                 full_period_return_sampleS = pd.DataFrame(columns=current_innovation_sequence.keys())
 
