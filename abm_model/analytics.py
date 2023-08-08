@@ -89,8 +89,8 @@ def analytics(historic_data: dict,
 
     #end-of-simulation reporting
     if t==(T-1):
-        fig, ax = plt.subplots(3, 3)
-        fig.set_size_inches(25, 20)
+        fig, ax = plt.subplots(2, 3)
+        fig.set_size_inches(25, 15)
 
         color1='blue'
         color2='orange'
@@ -155,21 +155,21 @@ def analytics(historic_data: dict,
         rightAx.tick_params(axis='y', labelcolor=color2)
         ax[1,2].set_title("Firm Equity and Market Power")
 
-        ax[2,0].plot(historic_data['loans_desired'], color=color1)
-        ax[2,0].plot(historic_data['total_firmloan'], color=color3)
-        ax[2,0].legend(['Firm Loan Desired', 'Firm Loan Granted'])
-        ax[2,0].set_ylabel('Loans', color=color4)
-        ax[2,0].tick_params(axis='y', labelcolor=color4)
-        ax[2,0].set_title("Loan Desire and Loans Granted")
-
-        ax[2, 1].plot(historic_data['loans_desired'], color=color4)
-        ax[2, 1].set_ylabel('Loans', color=color4)
-        ax[2, 1].tick_params(axis='y', labelcolor=color4)
-        rightAx = ax[2, 1].twinx()
-        rightAx.plot(historic_data['supply'], color=color3)
-        rightAx.set_ylabel('Firm Supply', color=color3)
-        rightAx.tick_params(axis='y', labelcolor=color3)
-        ax[2, 1].set_title("Loan Desire and Firm Supply")
+        # ax[2,0].plot(historic_data['loans_desired'], color=color1)
+        # ax[2,0].plot(historic_data['total_firmloan'], color=color3)
+        # ax[2,0].legend(['Firm Loan Desired', 'Firm Loan Granted'])
+        # ax[2,0].set_ylabel('Loans', color=color4)
+        # ax[2,0].tick_params(axis='y', labelcolor=color4)
+        # ax[2,0].set_title("Loan Desire and Loans Granted")
+        #
+        # ax[2, 1].plot(historic_data['loans_desired'], color=color4)
+        # ax[2, 1].set_ylabel('Loans', color=color4)
+        # ax[2, 1].tick_params(axis='y', labelcolor=color4)
+        # rightAx = ax[2, 1].twinx()
+        # rightAx.plot(historic_data['supply'], color=color3)
+        # rightAx.set_ylabel('Firm Supply', color=color3)
+        # rightAx.tick_params(axis='y', labelcolor=color3)
+        # ax[2, 1].set_title("Loan Desire and Firm Supply")
 
         # ax[2, 2].plot(historic_data['loans_desired'], color=color1)
         # ax[2, 2].plot(historic_data['total_firmloan'], color=color3)

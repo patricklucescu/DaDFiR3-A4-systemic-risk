@@ -1,3 +1,13 @@
+# #major changes:
+# firm prob default linked to firm leverage
+# supply linked to firm equity
+# price/supply adjustment weighted by markov probability
+# firm equity stationary time series
+#
+# #to do
+# apply bank leverage
+
+
 import copy
 import time
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
@@ -61,6 +71,7 @@ for t in range(T):
     start = time.time()
 
     start_of_period_firm_equity = sum([firms[firm_id].equity for firm_id in firms])
+    start_of_period_bank_equity = sum([banks[bank_id].equity for bank_id in banks])
     # for each firm compute expected supply and see who wants loans
     ###print(f"Period {t}: Compute expected supply and price")
     for firm_id in firms.keys():
@@ -188,12 +199,17 @@ for t in range(T):
 
     # regulate firm equity to be constant over time
     end_of_period_firm_equity = sum([firms[firm_id].equity for firm_id in firms])
+    end_of_period_bank_equity = sum([banks[bank_id].equity for bank_id in banks])
     # dividend or share issues
-    required_equity_correction = end_of_period_firm_equity / start_of_period_firm_equity
+    required_firm_equity_correction = end_of_period_firm_equity / start_of_period_firm_equity
+    required_bank_equity_correction = end_of_period_bank_equity / start_of_period_bank_equity
     #apply equity correction and calculate net-equity "profit"
     for firm_id in firms:
-           firms[firm_id].equity = (1/required_equity_correction) * firms[firm_id].equity * (1 + np.random.normal(0,0.01))
-           firms[firm_id].profit = float(firms[firm_id].equity / firms[firm_id].prev_equity - 1)
+       firms[firm_id].equity = (1/required_firm_equity_correction) * firms[firm_id].equity * (1 + np.random.normal(0,0.01))
+       firms[firm_id].profit = float(firms[firm_id].equity / firms[firm_id].prev_equity - 1)
+
+    # for bank_id in banks:
+    #     banks[bank_id].equity = (1 / required_bank_equity_correction) * banks[bank_id].equity * (1 + np.random.normal(0, 0.01))
 
     # update base agent for new IDs
     updated_firm_ids = [firm_id for firm_id in (base_agent.firm_ids + new_firm_ids) if firm_id not in defaulted_firms]
@@ -204,13 +220,18 @@ for t in range(T):
     # do calculations for next period
     economy_state.get_next_state()
 
+    #apply shock, effective as of next period
+    if t == calibration_variables['shock_period']:
+
+        pass
+
     end = time.time()
     ###print(f"Period {t} finished in {(end-start)/60} minutes")
 
 
 print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')
 
-srisk = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
+srisk, lrmes = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
 
 
