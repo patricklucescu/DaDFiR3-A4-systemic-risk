@@ -107,6 +107,8 @@ def anaylse_calibration(calibration_variables, firms, banks):
     print(f'loan desire over equity: {approx_loan_desire/actual_firm_equity}, average leverage firm: {average_leverage_firm}')
     print(f'loan desire over deposits: {approx_loan_desire/actual_bank_deposits}')
 
+    #To Do: loan desire over bank equity
+
     return probability_excess_supply_zero
 
 

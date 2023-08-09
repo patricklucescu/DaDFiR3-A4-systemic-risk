@@ -46,28 +46,30 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                                                            columns=equity_by_bank.keys())
 
     # %% construction of market and bank returns
+    for bank_id in equity_by_bank:
+        current_returns = list(equity_by_bank[bank_id].values())
+        #remove last period, i.e. period t = 300 OR period where equity = 0
+        current_returns[-1] = np.nan
+        temp = np.roll(current_returns,1)
+        temp[0] = np.nan
+        bank_return = pd.DataFrame(np.log(current_returns/temp),
+                                   index=list((equity_by_bank[bank_id].keys())),columns=[bank_id])
+        market_returns = market_returns.join(bank_return)
+
+        equity = pd.DataFrame(list(equity_by_bank[bank_id].values()),
+                              index=list((equity_by_bank[bank_id].keys())),columns=[bank_id])
+        debt = pd.DataFrame(list(debt_by_bank[bank_id].values()),
+                            index=list((debt_by_bank[bank_id].keys())),columns=[bank_id])
+
+        bank_equity = bank_equity.join(equity)
+        bank_debt = bank_debt.join(debt)
+
+    debt_equity_leverage = bank_debt/bank_equity
+
+
+    # %% construction of standardized innovations
     if monte_carlo_srisk:
 
-        for bank_id in equity_by_bank:
-            current_returns = list(equity_by_bank[bank_id].values())
-            #remove last period, i.e. period t = 300 OR period where equity = 0
-            current_returns[-1] = np.nan
-            temp = np.roll(current_returns,1)
-            temp[0] = np.nan
-            bank_return = pd.DataFrame(np.log(current_returns/temp),
-                                       index=list((equity_by_bank[bank_id].keys())),columns=[bank_id])
-            market_returns = market_returns.join(bank_return)
-
-            equity = pd.DataFrame(list(equity_by_bank[bank_id].values()),
-                                  index=list((equity_by_bank[bank_id].keys())),columns=[bank_id])
-            debt = pd.DataFrame(list(debt_by_bank[bank_id].values()),
-                                index=list((debt_by_bank[bank_id].keys())),columns=[bank_id])
-
-            bank_equity = bank_equity.join(equity)
-            bank_debt = bank_debt.join(debt)
-
-
-        #%% construction of standardized innovations
         for bank_id in equity_by_bank:
 
             print(f'{bank_id} in innovation sequences')

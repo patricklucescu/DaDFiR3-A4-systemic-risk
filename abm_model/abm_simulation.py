@@ -8,6 +8,8 @@
 # apply bank leverage
 
 
+
+
 import copy
 import time
 from abm_model.initialization import generate_random_firms_and_banks, generate_new_entities
@@ -23,6 +25,10 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 from abm_model.SRISK_calculation import calculate_SRISK
+import random
+
+random.seed(2)
+np.random.seed(2)
 
 #get calibration variables for initialization and markov model
 calibration_variables = get_calibration_variables()
@@ -233,7 +239,7 @@ print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(stateme
 
 srisk, lrmes = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
-
+print(srisk)
 
 
 
