@@ -23,7 +23,7 @@ naked_cds_prob = 0.1
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
 banks_idx = [f'bank_{x}' for x in range(1, BANKS + 1)]
 firms, banks, base_agent, base_firm, base_bank = generate_random_firms_and_banks(firms_idx, banks_idx,
-                                                                                 covered_cds_prob, naked_cds_prob)
+                                                 covered_cds_prob, naked_cds_prob)
 
 # Initialize Markov Model
 starting_prob = [1, 0]
