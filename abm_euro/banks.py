@@ -75,3 +75,42 @@ class Bank(BaseBank):
         self.tier_1_cap = tier_1_cap
         self.gross_loans = gross_loans
 
+    def update_current_deposits(self):
+        """
+        | Updates the current_deposits attribute of the bank object to the deposits of the bank.
+        """
+        self.current_deposits = self.deposits
+
+    def update_max_credit(self):
+        """
+        | Updates the max_credit attribute of the bank object based on the ratio of deposits to the capital requirement.
+        """
+        self.max_credit = self.deposits / self.capital_requirement
+
+    def asses_loan_requests(self,
+                            loans: list[Loan]) -> list:
+        """
+        | Asses loan requests received by the bank and returns a list of loan offers made by the bank.
+        It iterates over the loan requests, considering factors such as the borrower type and financial
+        fragility to update the interest rate of the loan offers.
+
+        :param loans: list of Loan objects.
+        :return: List of Loans that could be granted.
+        """
+        loan_offers = []
+        for loan in loans:
+            if loan.notional_amount > self.max_credit:
+                continue
+            if loan.borrower in self.firm_ids:
+                loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
+                                                              np.tanh((1 + np.random.uniform(0.9, 1.1) *
+                                                                       loan.prob_default_borrower) *
+                                                                      loan.financial_fragility_borrower)))
+                loan_offers.append(loan)
+            else:  # we have an interbank loan
+                # TODO: might be advisable to change how interbank interest rates are computed
+                loan.update_interest_rate(self.policy_rate * (1 + np.random.uniform(0, self.h_theta) *
+                                                              np.tanh(loan.financial_fragility_borrower)))
+                loan_offers.append(loan)
+        return loan_offers
+
