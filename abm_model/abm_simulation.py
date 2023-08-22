@@ -8,22 +8,26 @@ from abm_model.clear_interbank_market import clear_interbank_market
 from abm_model.clear_firm_default import clear_firm_default
 from abm_model.create_network_connections import create_network_connections
 from abm_model.logs import LogMessage
+from abm_model.calibration import *
 import itertools
 import numpy as np
 
-# set up number of firms and banks and other parameters needed
-FIRMS = 300
-BANKS = 20
-T = 400
-covered_cds_prob = 0.5
-naked_cds_prob = 0.1
+#get calibration variables for initialization and markov model
+calibration_variables = get_calibration_variables()
+
+#assign variables
+FIRMS = calibration_variables['FIRMS']
+BANKS = calibration_variables['BANKS']
+T = calibration_variables['T']
+covered_cds_prob = calibration_variables['covered_cds_prob']
+naked_cds_prob = calibration_variables['naked_cds_prob']
 
 
 # generate unique indices for the firms and banks
 firms_idx = [f'firm_{x}' for x in range(1, FIRMS + 1)]
 banks_idx = [f'bank_{x}' for x in range(1, BANKS + 1)]
 firms, banks, base_agent, base_firm, base_bank = generate_random_firms_and_banks(firms_idx, banks_idx,
-                                                 covered_cds_prob, naked_cds_prob)
+                                                                                 calibration_variables)
 
 # Initialize Markov Model
 starting_prob = [1, 0]

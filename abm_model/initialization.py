@@ -8,33 +8,31 @@ h_theta = 0.1
 
 def generate_random_firms_and_banks(firms_ids: list,
                                     banks_ids: list,
-                                    covered_cds_prob: float,
-                                    naked_cds_prob: float) -> tuple:
+                                    calibration_variables: dict) -> tuple:
     """
     | Generates random firms and banks based on the given firm and bank IDs.
 
     :param firms_ids: A list of firm IDs.
     :param banks_ids: A list of bank IDs.
-    :param covered_cds_prob: The probability of a covered credit default swap (CDS) being used.
-    :param naked_cds_prob: The probability of a naked CDS being used.
+    :param calibration_variables: Dictionary containing all calibration settings from calibration.py
     :return: A tuple containing the generated firms, banks, base agent, base firm, and base bank.
     """
-    min_productivity = 0.3
 
     # base agent, base bank and base firm
     base_agent = BaseAgent()
     base_firm = BaseFirm()
     base_bank = BaseBank()
-    base_agent.change_policy_rate(0.02)
+    base_agent.change_policy_rate(calibration_variables['policy_rate'])
     base_agent.change_firm_ids(firms_ids)
     base_agent.change_bank_ids(banks_ids)
-    base_agent.change_max_bank_loan(3)
-    base_agent.change_max_interbank_loan(2)
-    base_agent.change_max_cds_requests(3)
-    base_firm.change_min_wage(200)
-    base_firm.change_max_leverage(10)
-    base_bank.change_h_theta(0.1)
-    base_firm.change_market_price(float((1+base_agent.policy_rate)*(base_firm.min_wage / min_productivity)))
+    base_agent.change_max_bank_loan(calibration_variables['max_bank_loan'])
+    base_agent.change_max_interbank_loan(calibration_variables['max_interbank_loan'])
+    base_agent.change_max_cds_requests(calibration_variables['max_cds_requests'])
+    base_firm.change_min_wage(calibration_variables['min_wage'])
+    base_firm.change_max_leverage(calibration_variables['min_max_leverage'])
+    base_bank.change_h_theta(calibration_variables['h_theta'])
+    base_firm.change_market_price(
+        float((1 + base_agent.policy_rate) * (base_firm.min_wage / calibration_variables['min_productivity'])))
 
     # create actual firms
     firms = {}

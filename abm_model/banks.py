@@ -42,7 +42,9 @@ class Bank(BaseBank):
                  deposits,
                  capital_requirement,
                  covered_cds_prob,
-                 naked_cds_prob
+                 naked_cds_prob,
+                 tier_1_cap,
+                 gross_loans,
                  ):
         """
         | Constructor method that initializes the bank object with the specific parameters.
@@ -53,6 +55,8 @@ class Bank(BaseBank):
         :param float capital_requirement: The capital requirement of the bank.
         :param float covered_cds_prob: The probability of a covered credit default swap (CDS) being used by the bank.
         :param float naked_cds_prob: The probability of a naked CDS being used by the bank.
+        :param flaot tier_1_cap: The Tier 1 capital ration.
+        :param float gross_loans: The total amount of loans.
         """
         super().__init__()
         self.idx = idx
@@ -68,6 +72,8 @@ class Bank(BaseBank):
         self.deposit_change = None
         self.current_deposits = None
         self.earnings = None
+        self.tier_1_cap = tier_1_cap
+        self.gross_loans = gross_loans
 
     def update_current_deposits(self):
         """

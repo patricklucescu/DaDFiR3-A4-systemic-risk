@@ -7,9 +7,9 @@ def get_calibration_variables():
     calibration_variables = {}
 
     #agents and time periods
-    calibration_variables.update({'FIRMS': 300})
+    calibration_variables.update({'FIRMS': 10000})
     calibration_variables.update({'BANKS': 20})
-    calibration_variables.update({'T': 300})
+    calibration_variables.update({'T': 1})
     calibration_variables.update({'shock_period': 275})
 
     #CDS
