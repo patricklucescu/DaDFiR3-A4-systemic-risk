@@ -1,5 +1,5 @@
-from abm_model.loan import Loan
-from abm_model.baseclass import BaseAgent
+from abm_euro.loan import Loan
+from abm_euro.baseclass import BaseAgent
 import numpy as np
 import random
 
@@ -114,3 +114,90 @@ class Bank(BaseBank):
                 loan_offers.append(loan)
         return loan_offers
 
+    def check_loan(self,
+                   loan: Loan):
+        """
+        | Checks if a loan can be granted by the bank based on the maximum credit limit and other loan and
+        asset amounts.
+
+        :param loan: The loan in question.
+        :return: It returns False if it cannot be granted. Otherwise, it returns the difference between the
+        available funds and the notional of the loan.
+        """
+        if loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) > self.max_credit:
+            return False
+        return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) -
+                (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']])))
+
+    def check_cds(self,
+                  premium: float):
+        #  TODO: this is not correctly implemented
+        """
+        | Checks if the CDS can be granted based on the maximum credit limit and other loan and asset amounts.
+
+        :param premium: The CDS premium.
+        :return:
+        """
+        return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) + self.equity -
+                (sum([x.notional_amount for x in self.assets['loans']]) +
+                 sum([x.spread * x.notional_amount for x in self.assets['cds']])) >= premium)
+
+    def get_potential_interbank_loans(self,
+                                      credit_needed: float,
+                                      notional_amount: float) -> list[Loan]:
+        """
+        | Generates potential interbank loan offers from the bank to other banks.
+
+        :param credit_needed: The needed credit to extend the firm loan
+        :param notional_amount: The notional amount of the underlying Loan
+        :return: list of potential interbank Loans.
+        """
+        financial_fragility = (notional_amount + sum([x.notional_amount for x in self.assets['loans']])) / self.deposits
+        return [Loan(lender=x, borrower=self.idx,
+                     notional_amount=credit_needed,
+                     financial_fragility_borrower=financial_fragility)
+                for x in random.choices([x for x in self.bank_ids if x != self.idx], k=self.max_interbank_loan)
+                ]
+
+    def decide_cds(self,
+                   covered: bool = True) -> int:
+        """
+        | Decides whether to use a covered or naked credit default swap (CDS) based on the specified probabilities.
+
+        :param covered: indicates whether a covered CDS should be considered.
+        :return: 1 if a CDS is desired and 0 otherwise.
+        """
+        if covered:
+            return np.random.binomial(1, self.covered_cds_prob)
+        else:
+            return np.random.binomial(1, self.naked_cds_prob)
+
+    def provide_cds_spread(self,
+                           loan: Loan) -> float:
+        """
+        | Function calculates and provides the spread value for a credit default swap (CDS) based on the Hull CDS
+        valuation model for a one-period model.
+
+        :param loan: Underlying Loan object on which the CDS is written.
+        :return: CDS spread value.
+        """
+        R = 0.3
+        q = loan.prob_default_borrower + max(np.random.normal(0, 0.01), 10 ** (-2) - loan.prob_default_borrower)
+        u = 1 / (1 + self.policy_rate)
+        v = 1 / (1 + self.policy_rate)
+        e = 1 / (1 + self.policy_rate)
+        A = loan.interest_rate
+        pi = 1 - q
+        return (1 - R - A * R) * q * v / (q * (u + e) + pi * u)
+
+    def reset_variables(self):
+        """
+        | Resets the certain variables of the Bank object to make it ready to be used for the next period.
+        """
+        self.max_credit = None
+        self.assets = {'loans': [], 'cds': []}
+        self.liabilities = {'loans': [], 'cds': []}
+        self.money_from_firm_loans = 0
+        self.deposit_change = None
+        self.current_deposits = None
+        self.earnings = None

@@ -1,5 +1,5 @@
-from abm_model.loan import Loan
-from abm_model.baseclass import BaseAgent
+from abm_euro.loan import Loan
+from abm_euro.baseclass import BaseAgent
 import numpy as np
 import random
 
