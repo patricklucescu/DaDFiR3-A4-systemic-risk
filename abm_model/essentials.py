@@ -82,8 +82,5 @@ def compute_expected_supply_price(excess_supply: float,
     else:
         price = prev_price
         supply = prev_supply * (1 + supply_adj() * [-probability_excess_supply_zero/(1-probability_excess_supply_zero) if statement_3 else 1][0])
-        #
-
-
 
     return price, supply

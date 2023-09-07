@@ -70,7 +70,8 @@ def generate_random_firms_and_banks(firms_ids: list,
                                    deposits=bank_deposit[i],
                                    capital_requirement=calibration_variables['capital_req'],
                                    covered_cds_prob=calibration_variables['covered_cds_prob'],
-                                   naked_cds_prob=calibration_variables['naked_cds_prob'])
+                                   naked_cds_prob=calibration_variables['naked_cds_prob'],
+                                   equity_leverage=calibration_variables['equity_leverage'])
 
     probability_excess_supply_zero = anaylse_calibration(calibration_variables, firms, banks)
 
@@ -104,6 +105,7 @@ def generate_new_entities(new_bank_ids: list,
     covered_cds_prob = calibration_variables['covered_cds_prob']
     naked_cds_prob = calibration_variables['naked_cds_prob']
     leverage_severity = calibration_variables['leverage_severity']
+    equity_leverage = calibration_variables['equity_leverage']
 
 
     # for banks generation
@@ -120,7 +122,8 @@ def generate_new_entities(new_bank_ids: list,
                               deposits=bank_deposit[i],
                               capital_requirement=capital_req,
                               covered_cds_prob=covered_cds_prob,
-                              naked_cds_prob=naked_cds_prob)
+                              naked_cds_prob=naked_cds_prob,
+                              equity_leverage=equity_leverage)
     # for firm generation
     average_supply = np.mean([firms[firm_id].supply for firm_id in firms.keys()])
     std_supply = np.std([firms[firm_id].supply for firm_id in firms.keys()])

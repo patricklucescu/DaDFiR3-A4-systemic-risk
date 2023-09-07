@@ -229,6 +229,12 @@ for t in range(T):
     #apply shock, effective as of next period
     if t == calibration_variables['shock_period']:
 
+        # calibration_variables['mu_deposit_growth'] = -1
+        #
+        # calibration_variables['good_consumption'] = [0.975, 0.95]
+        # calibration_variables['good_consumption_std'] = [0.05, 0.05]
+        #
+        # calibration_variables['policy_rate'] = 0.025
         pass
 
     end = time.time()

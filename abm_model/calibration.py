@@ -51,6 +51,7 @@ def get_calibration_variables():
 
     #Banks
     calibration_variables.update({'capital_req': 0.85})
+    calibration_variables.update({'equity_leverage': 15})
     calibration_variables.update({'bank_equity_scaling': 20000000})
     calibration_variables.update({'bank_supply_poisson_lambda': 4})
     calibration_variables.update({'min_deposit_ratio': 5})

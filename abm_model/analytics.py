@@ -6,7 +6,6 @@ from abm_model.baseclass import BaseAgent
 from abm_model.loan import Loan
 from abm_model.credit_default_swap import CDS
 
-
 def analytics(historic_data: dict,
               banks: dict,
               t: float,
@@ -90,7 +89,7 @@ def analytics(historic_data: dict,
     #end-of-simulation reporting
     if t==(T-1):
         fig, ax = plt.subplots(2, 3)
-        fig.set_size_inches(25, 15)
+        fig.set_size_inches(28, 15)
 
         color1='blue'
         color2='orange'
@@ -178,6 +177,18 @@ def analytics(historic_data: dict,
         # ax[2, 2].tick_params(axis='y', labelcolor=color4)
         # ax[2, 2].set_title("Loan Desire and Loans Granted")
         plt.show()
+
+        # plt.plot(historic_data['bank_equity'], color=color1)
+        # plt.ylabel('Bank Equity', color=color1)
+        # plt.tick_params(axis='y', labelcolor=color1)
+        # rightAx = plt.twinx()
+        # rightAx.plot(historic_data['bank_deposits'], color=color2)
+        # rightAx.set_ylabel('Bank Deposits', color=color2)
+        # rightAx.tick_params(axis='y', labelcolor=color2)
+        # plt.title("Bank Equity and Deposits")
+        # plt.axvline(x=250, color='r', label='shock')
+        #
+        # plt.show()
 
         print(f'Last bank: {base_agent.bank_ids[len(base_agent.bank_ids)-1]}')
         print(f'Last bank: {base_agent.firm_ids[len(base_agent.firm_ids)-1]}')

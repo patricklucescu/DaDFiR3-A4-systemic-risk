@@ -42,7 +42,8 @@ class Bank(BaseBank):
                  deposits,
                  capital_requirement,
                  covered_cds_prob,
-                 naked_cds_prob
+                 naked_cds_prob,
+                 equity_leverage
                  ):
         """
         | Constructor method that initializes the bank object with the specific parameters.
@@ -53,6 +54,7 @@ class Bank(BaseBank):
         :param float capital_requirement: The capital requirement of the bank.
         :param float covered_cds_prob: The probability of a covered credit default swap (CDS) being used by the bank.
         :param float naked_cds_prob: The probability of a naked CDS being used by the bank.
+        :param float equity_leverage: Maximum leverage for loans
         """
         super().__init__()
         self.idx = idx
@@ -61,6 +63,7 @@ class Bank(BaseBank):
         self.capital_requirement = capital_requirement
         self.covered_cds_prob = covered_cds_prob
         self.naked_cds_prob = naked_cds_prob
+        self.equity_leverage = equity_leverage
         self.max_credit = None
         self.assets = {'loans': [], 'cds': []}
         self.liabilities = {'loans': [], 'cds': []}
@@ -118,7 +121,7 @@ class Bank(BaseBank):
         :return: It returns False if it cannot be granted. Otherwise, it returns the difference between the
         available funds and the notional of the loan.
         """
-        if loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) > self.max_credit:
+        if loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']]) > min(self.max_credit,self.equity*self.equity_leverage):
             return False
         return (self.deposits + sum([x.notional_amount for x in self.liabilities['loans']]) -
                 (loan.notional_amount + sum([x.notional_amount for x in self.assets['loans']])))
