@@ -71,6 +71,8 @@ class Bank(BaseBank):
         self.deposit_change = None
         self.current_deposits = None
         self.earnings = None
+        self.profit = None
+        self.prev_equity = equity
 
     def update_current_deposits(self):
         """

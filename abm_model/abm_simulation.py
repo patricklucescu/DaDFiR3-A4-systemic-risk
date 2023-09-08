@@ -26,6 +26,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from abm_model.SRISK_calculation import calculate_SRISK
 import random
+import pandas as pd
 
 random.seed(2)
 np.random.seed(2)
@@ -78,6 +79,9 @@ for t in range(T):
         firms[firm_id].compute_expected_supply_and_prices()
         firms[firm_id].check_loan_desire_and_choose_loans()
 
+    for bank_id in banks.keys():
+        banks[bank_id].prev_equity = banks[bank_id].equity
+
         if (firms[firm_id].excess_supply > 0 and firms[firm_id].price >= base_firm.market_price):
             statement_counter[1] += 1
         if (firms[firm_id].excess_supply == 0 and firms[firm_id].price < base_firm.market_price):
@@ -87,7 +91,7 @@ for t in range(T):
         if (firms[firm_id].excess_supply == 0 and firms[firm_id].price >= base_firm.market_price):
             statement_counter[4] += 1
 
-    loan_desire_firms = firms
+    loan_desire_firms = copy.deepcopy(firms)
 
     # iterate through banks and see which ones accept the loans
     loan_requests = merge_dict(list(itertools.chain(*[[{loan.lender: loan} for loan in firms[firm_id].potential_lenders]
@@ -112,7 +116,7 @@ for t in range(T):
                                                                          t,
                                                                          calibration_variables['cds_fractional'])
 
-    loan_granted_firms = firms
+    loan_granted_firms = copy.deepcopy(firms)
 
     # compute market price
     base_firm.change_market_price(np.median([firm.price for _, firm in firms.items()]))
@@ -208,8 +212,10 @@ for t in range(T):
        firms[firm_id].equity = (1/required_firm_equity_correction) * firms[firm_id].equity * (1 + np.random.normal(0,0.01))
        firms[firm_id].profit = float(firms[firm_id].equity / firms[firm_id].prev_equity - 1)
 
-    # for bank_id in banks:
-    #     banks[bank_id].equity = (1 / required_bank_equity_correction) * banks[bank_id].equity * (1 + np.random.normal(0, 0.01))
+    for bank_id in banks:
+        banks[bank_id].profit = banks[bank_id].equity/banks[bank_id].prev_equity
+        banks[bank_id].deposits = (1 + (banks[bank_id].profit-1)*0.75) * \
+                                  banks[bank_id].deposits * (1 + np.random.normal(0, 0.03))
 
     # update base agent for new IDs
     updated_firm_ids = [firm_id for firm_id in (base_agent.firm_ids + new_firm_ids) if firm_id not in defaulted_firms]
@@ -241,14 +247,19 @@ print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(stateme
 
 srisk, lrmes = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
-print(srisk)
+srisk_positive = copy.deepcopy(srisk)
+srisk_positive[srisk_positive<0] = 0
+srisk_positive[srisk_positive.isna()] = 0
+srisk_positive_aggregate = srisk_positive.sum(axis=1)
+srisk_positive_aggregate = srisk_positive_aggregate[srisk_positive_aggregate!=0]
 
-
-
-
-
-
-
+plt.plot(srisk_positive_aggregate, color='blue')
+plt.ylabel('Aggregate systemic risk in $', color='blue')
+plt.tick_params(axis='y', labelcolor='blue')
+plt.title("Aggregate systemic risk")
+plt.axvline(x=275, color='r', label='shock')
+plt.savefig(str(round(time.time()*1000))+'.pdf')
+plt.show()
 
 
 
