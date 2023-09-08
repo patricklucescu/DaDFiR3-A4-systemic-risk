@@ -37,9 +37,6 @@ calibration_variables = get_calibration_variables()
 FIRMS = calibration_variables['FIRMS']
 BANKS = calibration_variables['BANKS']
 T = calibration_variables['T']
-covered_cds_prob = calibration_variables['covered_cds_prob']
-naked_cds_prob = calibration_variables['naked_cds_prob']
-
 
 
 
@@ -56,11 +53,7 @@ economy_state = MarkovModel(starting_prob=starting_prob,
                             transition_matrix=transition_matrix,
                             states=states)
 
-# good consumption based on economy state
-good_consumption = calibration_variables['good_consumption']
-good_consumption_std = calibration_variables['good_consumption_std']
-min_consumption = calibration_variables['min_consumption']
-max_consumption = calibration_variables['max_consumption']
+
 
 # create logs and initialize historic values
 logs = []
@@ -114,9 +107,10 @@ for t in range(T):
                                                                          firms,
                                                                          logs,
                                                                          base_agent.bank_ids,
-                                                                         covered_cds_prob,
-                                                                         naked_cds_prob,
-                                                                         t)
+                                                                         calibration_variables['covered_cds_prob'],
+                                                                         calibration_variables['naked_cds_prob'],
+                                                                         t,
+                                                                         calibration_variables['cds_fractional'])
 
     loan_granted_firms = firms
 
@@ -128,10 +122,10 @@ for t in range(T):
     firms, banks, defaulted_firms = clear_firm_default(firms,
                                                        banks,
                                                        economy_state,
-                                                       good_consumption,
-                                                       good_consumption_std,
-                                                       min_consumption,
-                                                       max_consumption,
+                                                       calibration_variables['good_consumption'],
+                                                       calibration_variables['good_consumption_std'],
+                                                       calibration_variables['min_consumption'],
+                                                       calibration_variables['max_consumption'],
                                                        calibration_variables['firm_equity_scaling'])
 
     # do deposit change
@@ -229,12 +223,14 @@ for t in range(T):
     #apply shock, effective as of next period
     if t == calibration_variables['shock_period']:
 
-        # calibration_variables['mu_deposit_growth'] = -1
+        calibration_variables['mu_deposit_growth'] = -1
         #
-        # calibration_variables['good_consumption'] = [0.975, 0.95]
-        # calibration_variables['good_consumption_std'] = [0.05, 0.05]
+        # calibration_variables['good_consumption'] = [0.90, 0.85]
+        # calibration_variables['good_consumption_std'] = [0.075, 0.075]
+        # calibration_variables['min_consumption'] = 0.85
+
         #
-        # calibration_variables['policy_rate'] = 0.025
+        #BaseAgent.change_policy_rate(0.035)
         pass
 
     end = time.time()
