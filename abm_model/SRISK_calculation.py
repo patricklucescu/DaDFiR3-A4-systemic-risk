@@ -3,8 +3,12 @@ import mgarch
 import pandas as pd
 import random
 import math
+import time
+import cudf
 
 def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
+
+    start = time.time()
 
     #%% Variable initialization
     #conditional market shortfall
@@ -14,12 +18,12 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     #h-period LRMES
     h = 10
     #number of Monte-Carlo simulations
-    S = 1000
+    S = 10000
 
-    monte_carlo_srisk = True
+    monte_carlo_srisk = False
 
     srisk_calculation_start = 250
-    nperiods_rolling_window = 100
+    nperiods_rolling_window = 200
     dcc_garch_calibration = 30
 
     lrmes = pd.DataFrame(index=list((equity_by_time.keys())), columns=equity_by_bank.keys())
@@ -319,10 +323,38 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                 lrmes.loc[period][bank_id] = -np.mean(full_period_return_sampleS[bank_id])
 
 
-    # do closed form here for fast and repeatable simulation
+    # simple bootstrap from empirical dist.
     else:
 
-        pass
+        for period in range(srisk_calculation_start, len(equity_by_time)-2):
+
+            current_returns = market_returns[period-nperiods_rolling_window:period]
+            current_returns = current_returns.dropna(axis=1)
+            current_market_returns = current_returns['market_return']
+
+            bootstrap_position = pd.DataFrame([random.choices(list(current_returns.index), k=h) for sample in range(S)])
+            bootstrap_returns = pd.DataFrame([current_market_returns[row[1]].values.tolist() for row in bootstrap_position.iterrows()])
+            bootstrap_returns_cumulated = bootstrap_returns.sum(axis=1)
+            bootstrap_returns_cumulated = np.exp(bootstrap_returns_cumulated) - 1
+            shortfall_boostrap_position = bootstrap_position[bootstrap_returns_cumulated < c]
+
+            print(len(shortfall_boostrap_position))
+
+            bank_ids = [bank_key for bank_key in current_returns.keys()
+                        if 'market_return' not in bank_key]
+
+            for bank_id in bank_ids:
+                current_bank_returns = current_returns[bank_id]
+                bootstrap_bank_returns = pd.DataFrame(
+                    [current_bank_returns[row[1]].values.tolist() for row in shortfall_boostrap_position.iterrows()])
+                bootstrap_bank_returns_cumulated = bootstrap_bank_returns.sum(axis=1)
+                bootstrap_bank_returns_cumulated = np.exp(bootstrap_bank_returns_cumulated) - 1
+
+                lrmes.loc[period][bank_id] = -np.mean(bootstrap_bank_returns_cumulated)
+
+
+    end = time.time()
+    print(f"SRISK calculation finished in {(end - start) / 60} minutes")
 
     #%% calculation of SRISK from equity, debt and LRMES
     for bank_id in srisk_bank_ids:
@@ -330,6 +362,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
         for period in range(srisk_calculation_start, len(equity_by_time)):
 
             srisk.loc[period][bank_id] = k*bank_debt.loc[period][bank_id]-(1-k)*bank_equity.loc[period][bank_id]*(1-lrmes.loc[period][bank_id])
+
 
     return srisk, lrmes
 
