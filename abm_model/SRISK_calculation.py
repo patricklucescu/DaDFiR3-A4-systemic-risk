@@ -4,7 +4,9 @@ import pandas as pd
 import random
 import math
 import time
-import cudf
+# import cupy as cp
+import matplotlib.pyplot as plt
+import copy
 
 def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
 
@@ -16,14 +18,14 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     #prudential capital fraction
     k = 0.08
     #h-period LRMES
-    h = 10
+    h = 15
     #number of Monte-Carlo simulations
-    S = 10000
+    S = 50000
 
     monte_carlo_srisk = False
 
     srisk_calculation_start = 250
-    nperiods_rolling_window = 200
+    nperiods_rolling_window = 150
     dcc_garch_calibration = 30
 
     lrmes = pd.DataFrame(index=list((equity_by_time.keys())), columns=equity_by_bank.keys())
@@ -68,8 +70,8 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
         bank_equity = bank_equity.join(equity)
         bank_debt = bank_debt.join(debt)
 
-    debt_equity_leverage = bank_debt/bank_equity
-
+    debt_equity_leverage = (bank_debt)/bank_equity
+    quasi_leverage = (bank_debt + bank_equity) / bank_equity
 
     # %% construction of standardized innovations
     if monte_carlo_srisk:
@@ -352,17 +354,34 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
 
                 lrmes.loc[period][bank_id] = -np.mean(bootstrap_bank_returns_cumulated)
 
-
     end = time.time()
     print(f"SRISK calculation finished in {(end - start) / 60} minutes")
 
     #%% calculation of SRISK from equity, debt and LRMES
-    for bank_id in srisk_bank_ids:
+    for bank_id in equity_by_bank.keys():
 
         for period in range(srisk_calculation_start, len(equity_by_time)):
+            if bank_equity.loc[period][bank_id] == 0:
+                srisk.loc[period][bank_id] = 0
+            else:
+                srisk.loc[period][bank_id] = k*bank_debt.loc[period][bank_id]-(1-k)*bank_equity.loc[period][bank_id]*(1-lrmes.loc[period][bank_id])
 
-            srisk.loc[period][bank_id] = k*bank_debt.loc[period][bank_id]-(1-k)*bank_equity.loc[period][bank_id]*(1-lrmes.loc[period][bank_id])
+    srisk_positive = copy.deepcopy(srisk)
+    srisk_positive[srisk_positive<0] = 0
+    srisk_positive[srisk_positive.isna()] = 0
+    srisk_positive_aggregate = srisk_positive.sum(axis=1)
+    srisk_positive_aggregate = srisk_positive_aggregate[srisk_positive_aggregate!=0]
 
+    aggregate_assets = (bank_equity + bank_debt).sum(axis=1)
+    aggregate_assets = aggregate_assets.loc[srisk_positive_aggregate.keys()]
+
+    plt.plot(srisk_positive_aggregate/aggregate_assets, color='blue')
+    plt.ylabel('Systemic risk in % of aggregate assets', color='blue')
+    plt.tick_params(axis='y', labelcolor='blue')
+    plt.title("Aggregate systemic risk")
+    plt.axvline(x=275, color='r', label='shock')
+    # plt.savefig(str(round(time.time()*1000))+'.pdf')
+    plt.show()
 
     return srisk, lrmes
 

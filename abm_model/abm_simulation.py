@@ -216,7 +216,7 @@ def abm_model(seed_value):
 
         for bank_id in banks:
             banks[bank_id].profit = banks[bank_id].equity/banks[bank_id].prev_equity
-            banks[bank_id].deposits = (1 + (banks[bank_id].profit-1)*0.75) * \
+            banks[bank_id].deposits = (1 + (banks[bank_id].profit-1)*0.85) * \
                                       banks[bank_id].deposits * (1 + np.random.normal(0, 0.03))
 
         # update base agent for new IDs
@@ -249,19 +249,6 @@ def abm_model(seed_value):
 
     srisk, lrmes = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
-    # srisk_positive = copy.deepcopy(srisk)
-    # srisk_positive[srisk_positive<0] = 0
-    # srisk_positive[srisk_positive.isna()] = 0
-    # srisk_positive_aggregate = srisk_positive.sum(axis=1)
-    # srisk_positive_aggregate = srisk_positive_aggregate[srisk_positive_aggregate!=0]
-    #
-    # plt.plot(srisk_positive_aggregate, color='blue')
-    # plt.ylabel('Aggregate systemic risk in $', color='blue')
-    # plt.tick_params(axis='y', labelcolor='blue')
-    # plt.title("Aggregate systemic risk")
-    # plt.axvline(x=275, color='r', label='shock')
-    # plt.savefig(str(round(time.time()*1000))+'.pdf')
-    # plt.show()
 
     return historic_data
 

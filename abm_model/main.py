@@ -1,9 +1,11 @@
-from abm_model import abm_simulation
+import abm_simulation
 import multiprocessing
 import time
+import random
+
 
 parallel=False
-num_iterations = 10
+num_iterations = 100
 
 if parallel:
 
@@ -36,7 +38,7 @@ else:
 
     for i in range(num_iterations):
 
-        abm_simulation.abm_model(i)
+        abm_simulation.abm_model(random.randint(1,10000))
 
     end = time.time()
     print(f"Simulation finished in {(end - start) / 60} minutes")
