@@ -70,7 +70,7 @@ def abm_model(seed_value):
 
     # begin the simulation part
     for t in range(T):
-        start = time.time()
+        # start = time.time()
 
         start_of_period_firm_equity = sum([firms[firm_id].equity for firm_id in firms])
         start_of_period_bank_equity = sum([banks[bank_id].equity for bank_id in banks])
@@ -81,9 +81,6 @@ def abm_model(seed_value):
             firms[firm_id].compute_expected_supply_and_prices()
             firms[firm_id].check_loan_desire_and_choose_loans()
 
-        for bank_id in banks.keys():
-            banks[bank_id].prev_equity = banks[bank_id].equity
-
             if (firms[firm_id].excess_supply > 0 and firms[firm_id].price >= base_firm.market_price):
                 statement_counter[1] += 1
             if (firms[firm_id].excess_supply == 0 and firms[firm_id].price < base_firm.market_price):
@@ -92,6 +89,9 @@ def abm_model(seed_value):
                 statement_counter[3] += 1
             if (firms[firm_id].excess_supply == 0 and firms[firm_id].price >= base_firm.market_price):
                 statement_counter[4] += 1
+
+        for bank_id in banks.keys():
+            banks[bank_id].prev_equity = banks[bank_id].equity
 
         loan_desire_firms = copy.deepcopy(firms)
 
@@ -241,15 +241,16 @@ def abm_model(seed_value):
             #BaseAgent.change_policy_rate(0.035)
             pass
 
-        end = time.time()
+        # end = time.time()
         ###print(f"Period {t} finished in {(end-start)/60} minutes")
 
 
-    print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')
+    # print(f'zero excess supply:{(statement_counter[2]+statement_counter[4])/(statement_counter[1]+statement_counter[2]+statement_counter[3]+statement_counter[4])}')
 
-    srisk, lrmes = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
+    srisk_positive_aggregate, aggregate_assets = calculate_SRISK(historic_data['banks_equity_by_time'],historic_data['banks_equity_by_bank'],historic_data['banks_debt_by_bank'])
 
 
-    return historic_data
+
+    return srisk_positive_aggregate, aggregate_assets
 
 

@@ -88,7 +88,8 @@ def analytics(historic_data: dict,
         = start_of_period_analysis(historic_data['loans_desired'],historic_data['total_wages'],historic_data['supply'],loan_granted_firms,loan_desire_firms)
 
     #end-of-simulation reporting
-    if t==(T-1):
+    # if t==(T-1):
+    if t == 10000:
         fig, ax = plt.subplots(2, 3)
         fig.set_size_inches(28, 15)
 

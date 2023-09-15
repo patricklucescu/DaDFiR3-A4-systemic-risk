@@ -5,6 +5,7 @@ import random
 import math
 import time
 # import cupy as cp
+# import cudf
 import matplotlib.pyplot as plt
 import copy
 
@@ -20,12 +21,13 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     #h-period LRMES
     h = 15
     #number of Monte-Carlo simulations
-    S = 50000
+    S = 100000
 
-    monte_carlo_srisk = False
+    dcc_garch_sampling = False
+    GPU = True
 
-    srisk_calculation_start = 250
-    nperiods_rolling_window = 150
+    srisk_calculation_start = 150
+    nperiods_rolling_window = 100
     dcc_garch_calibration = 30
 
     lrmes = pd.DataFrame(index=list((equity_by_time.keys())), columns=equity_by_bank.keys())
@@ -74,7 +76,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     quasi_leverage = (bank_debt + bank_equity) / bank_equity
 
     # %% construction of standardized innovations
-    if monte_carlo_srisk:
+    if dcc_garch_sampling:
 
         for bank_id in equity_by_bank:
 
@@ -328,31 +330,65 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     # simple bootstrap from empirical dist.
     else:
 
-        for period in range(srisk_calculation_start, len(equity_by_time)-2):
+        for period in range(srisk_calculation_start, len(equity_by_time)-1):
 
-            current_returns = market_returns[period-nperiods_rolling_window:period]
-            current_returns = current_returns.dropna(axis=1)
-            current_market_returns = current_returns['market_return']
+            if not GPU:
 
-            bootstrap_position = pd.DataFrame([random.choices(list(current_returns.index), k=h) for sample in range(S)])
-            bootstrap_returns = pd.DataFrame([current_market_returns[row[1]].values.tolist() for row in bootstrap_position.iterrows()])
-            bootstrap_returns_cumulated = bootstrap_returns.sum(axis=1)
-            bootstrap_returns_cumulated = np.exp(bootstrap_returns_cumulated) - 1
-            shortfall_boostrap_position = bootstrap_position[bootstrap_returns_cumulated < c]
+                current_returns = market_returns[period-nperiods_rolling_window:period]
+                current_returns = current_returns.dropna(axis=1)
+                current_market_returns = current_returns['market_return']
 
-            print(len(shortfall_boostrap_position))
+                bootstrap_position = pd.DataFrame([random.choices(list(current_returns.index), k=h) for sample in range(S)])
+                bootstrap_returns = pd.DataFrame([current_market_returns[row[1]].values.tolist() for row in bootstrap_position.iterrows()])
+                bootstrap_returns_cumulated = bootstrap_returns.sum(axis=1)
+                bootstrap_returns_cumulated = np.exp(bootstrap_returns_cumulated) - 1
+                shortfall_boostrap_position = bootstrap_position[bootstrap_returns_cumulated < c]
 
-            bank_ids = [bank_key for bank_key in current_returns.keys()
-                        if 'market_return' not in bank_key]
+                # print(len(shortfall_boostrap_position))
 
-            for bank_id in bank_ids:
-                current_bank_returns = current_returns[bank_id]
-                bootstrap_bank_returns = pd.DataFrame(
-                    [current_bank_returns[row[1]].values.tolist() for row in shortfall_boostrap_position.iterrows()])
-                bootstrap_bank_returns_cumulated = bootstrap_bank_returns.sum(axis=1)
-                bootstrap_bank_returns_cumulated = np.exp(bootstrap_bank_returns_cumulated) - 1
+                bank_ids = [bank_key for bank_key in current_returns.keys()
+                            if 'market_return' not in bank_key]
 
-                lrmes.loc[period][bank_id] = -np.mean(bootstrap_bank_returns_cumulated)
+                for bank_id in bank_ids:
+                    current_bank_returns = current_returns[bank_id]
+                    bootstrap_bank_returns = pd.DataFrame(
+                        [current_bank_returns[row[1]].values.tolist() for row in shortfall_boostrap_position.iterrows()])
+                    bootstrap_bank_returns_cumulated = bootstrap_bank_returns.sum(axis=1)
+                    bootstrap_bank_returns_cumulated = np.exp(bootstrap_bank_returns_cumulated) - 1
+
+                    lrmes.loc[period][bank_id] = -np.mean(bootstrap_bank_returns_cumulated)
+
+            else:
+
+                rng = np.random.default_rng()
+
+                current_returns = market_returns[period - nperiods_rolling_window:period]
+                current_returns = current_returns.dropna(axis=1)
+
+                current_market_returns = np.matrix(current_returns['market_return'])
+
+                bootstrap_position = np.append(np.zeros([S,len(current_returns)-h]),np.ones([S,h]),axis=1)
+                bootstrap_position = rng.permuted(bootstrap_position, axis=1)
+
+                bootstrap_returns_cumulated = np.matmul(bootstrap_position,current_market_returns.T)
+                bootstrap_returns_cumulated = np.exp(bootstrap_returns_cumulated) - 1
+
+                shortfall_boostrap_position = bootstrap_position[np.where(np.any(bootstrap_returns_cumulated<c, axis=1))[0]]
+
+                bank_ids = [bank_key for bank_key in current_returns.keys()
+                            if 'market_return' not in bank_key]
+
+                for bank_id in bank_ids:
+
+                    if len(shortfall_boostrap_position>0):
+                        current_bank_returns = np.matrix(current_returns[bank_id])
+                        bootstrap_bank_returns_cumulated = np.matmul(shortfall_boostrap_position,current_bank_returns.T)
+                        bootstrap_bank_returns_cumulated = np.exp(bootstrap_bank_returns_cumulated) - 1
+
+                        lrmes.loc[period][bank_id] = -np.mean(bootstrap_bank_returns_cumulated)
+
+                    else:
+                        lrmes.loc[period][bank_id] = np.nan
 
     end = time.time()
     print(f"SRISK calculation finished in {(end - start) / 60} minutes")
@@ -370,18 +406,10 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     srisk_positive[srisk_positive<0] = 0
     srisk_positive[srisk_positive.isna()] = 0
     srisk_positive_aggregate = srisk_positive.sum(axis=1)
-    srisk_positive_aggregate = srisk_positive_aggregate[srisk_positive_aggregate!=0]
+    srisk_positive_aggregate = srisk_positive_aggregate.loc[srisk_calculation_start:]
 
     aggregate_assets = (bank_equity + bank_debt).sum(axis=1)
     aggregate_assets = aggregate_assets.loc[srisk_positive_aggregate.keys()]
 
-    plt.plot(srisk_positive_aggregate/aggregate_assets, color='blue')
-    plt.ylabel('Systemic risk in % of aggregate assets', color='blue')
-    plt.tick_params(axis='y', labelcolor='blue')
-    plt.title("Aggregate systemic risk")
-    plt.axvline(x=275, color='r', label='shock')
-    # plt.savefig(str(round(time.time()*1000))+'.pdf')
-    plt.show()
-
-    return srisk, lrmes
+    return srisk_positive_aggregate, aggregate_assets
 

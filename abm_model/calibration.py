@@ -9,8 +9,8 @@ def get_calibration_variables():
     #agents and time periods
     calibration_variables.update({'FIRMS': 300})
     calibration_variables.update({'BANKS': 20})
-    calibration_variables.update({'T': 300})
-    calibration_variables.update({'shock_period': 275})
+    calibration_variables.update({'T': 200})
+    calibration_variables.update({'shock_period': 175})
 
     #CDS
     calibration_variables.update({'covered_cds_prob': 0.5})
@@ -96,18 +96,18 @@ def anaylse_calibration(calibration_variables, firms, banks):
 
     probability_excess_supply_zero = calculate_excess_supply_probability(calibration_variables)
 
-    print(f'probability of excess supply equal 0: {probability_excess_supply_zero}')
-
-    print(f'expected firm equity: {expected_firm_equity}, actual firm equity: {actual_firm_equity}, '
-          f'deviation: {(expected_firm_equity - actual_firm_equity) / expected_firm_equity}')
-    print(f'expected bank equity: {expected_bank_equity}, actual bank equity: {actual_bank_equity}, '
-          f'deviation: {(expected_bank_equity - actual_bank_equity) / expected_bank_equity}')
-    print(f'expected bank deposits: {expected_bank_deposits}, actual bank deposits: {actual_bank_deposits}, '
-          f'deviation: {(expected_bank_deposits - actual_bank_deposits) / expected_bank_deposits}')
-    print(f'expected firm supply: {expected_firm_supply}, actual firm supply: {actual_firm_supply}, '
-          f'deviation: {(expected_firm_supply - actual_firm_supply) / expected_firm_supply}')
-    print(f'loan desire over equity: {approx_loan_desire/actual_firm_equity}, average leverage firm: {average_leverage_firm}')
-    print(f'loan desire over deposits: {approx_loan_desire/actual_bank_deposits}')
+    # print(f'probability of excess supply equal 0: {probability_excess_supply_zero}')
+    #
+    # print(f'expected firm equity: {expected_firm_equity}, actual firm equity: {actual_firm_equity}, '
+    #       f'deviation: {(expected_firm_equity - actual_firm_equity) / expected_firm_equity}')
+    # print(f'expected bank equity: {expected_bank_equity}, actual bank equity: {actual_bank_equity}, '
+    #       f'deviation: {(expected_bank_equity - actual_bank_equity) / expected_bank_equity}')
+    # print(f'expected bank deposits: {expected_bank_deposits}, actual bank deposits: {actual_bank_deposits}, '
+    #       f'deviation: {(expected_bank_deposits - actual_bank_deposits) / expected_bank_deposits}')
+    # print(f'expected firm supply: {expected_firm_supply}, actual firm supply: {actual_firm_supply}, '
+    #       f'deviation: {(expected_firm_supply - actual_firm_supply) / expected_firm_supply}')
+    # print(f'loan desire over equity: {approx_loan_desire/actual_firm_equity}, average leverage firm: {average_leverage_firm}')
+    # print(f'loan desire over deposits: {approx_loan_desire/actual_bank_deposits}')
 
     #To Do: loan desire over bank equity
 
