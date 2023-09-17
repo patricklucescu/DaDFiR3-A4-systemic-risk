@@ -10,8 +10,9 @@ import pandas
 import matplotlib.pyplot as plt
 
 parallel=False
-num_iterations = 10
-load_module = False
+num_iterations = 20
+load_module = True
+
 
 results = {}
 
@@ -30,7 +31,7 @@ if not load_module:
             pool.join()
             # end = time.time()
             # print(f"Finished in {(end - start) / 60} minutes")
-            with open('abm_run.pkl', 'wb') as file:
+            with open('abm_run'+str(round(time.time()*1000))+'.pkl', 'wb') as file:
                 pickle.dump(results, file)
 
     else:
@@ -46,7 +47,7 @@ if not load_module:
         # end = time.time()
         # print(f"Simulation finished in {(end - start) / 60} minutes")
 
-    with open('abm_run.pkl', 'wb') as file:
+    with open('abm_run'+str(round(time.time()*1000))+'.pkl', 'wb') as file:
         pickle.dump(results, file)
 
 else:
