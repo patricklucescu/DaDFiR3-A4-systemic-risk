@@ -228,18 +228,32 @@ def abm_model(seed_value):
         # do calculations for next period
         economy_state.get_next_state()
 
+        if t == 0:
+            deposit_original = calibration_variables['mu_deposit_growth']
+            consumption_original = calibration_variables['good_consumption']
+            consumption_original_std = calibration_variables['good_consumption_std']
+            consumption_original_min = calibration_variables['min_consumption']
+
         #apply shock, effective as of next period
         if t == calibration_variables['shock_period']:
 
-            calibration_variables['mu_deposit_growth'] = -1
-            #
-            # calibration_variables['good_consumption'] = [0.90, 0.85]
-            # calibration_variables['good_consumption_std'] = [0.075, 0.075]
-            # calibration_variables['min_consumption'] = 0.85
+            if calibration_variables['deposit_shock']:
 
-            #
-            #BaseAgent.change_policy_rate(0.035)
-            pass
+                calibration_variables['mu_deposit_growth'] = calibration_variables['deposit_shock_size']
+
+            if calibration_variables['demand_shock']:
+
+                calibration_variables['good_consumption'] = calibration_variables['good_consumption_shock']
+                calibration_variables['good_consumption_std'] = calibration_variables['good_consumption_std_shock']
+                calibration_variables['min_consumption'] = calibration_variables['min_consumption_shock']
+
+
+        if t == calibration_variables['shock_period'] + calibration_variables['shock_duration']:
+
+            calibration_variables['mu_deposit_growth'] = deposit_original
+            calibration_variables['good_consumption'] = consumption_original
+            calibration_variables['good_consumption_std'] = consumption_original_std
+            calibration_variables['min_consumption'] = consumption_original_min
 
         # end = time.time()
         ###print(f"Period {t} finished in {(end-start)/60} minutes")

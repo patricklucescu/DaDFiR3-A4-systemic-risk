@@ -11,6 +11,13 @@ def get_calibration_variables():
     calibration_variables.update({'BANKS': 20})
     calibration_variables.update({'T': 200})
     calibration_variables.update({'shock_period': 175})
+    calibration_variables.update({'shock_duration': 5})
+    calibration_variables.update({'deposit_shock': True})
+    calibration_variables.update({'deposit_shock_size': -5})
+    calibration_variables.update({'demand_shock': True})
+    calibration_variables.update({'good_consumption_shock': [0.85, 0.75]})
+    calibration_variables.update({'good_consumption_std_shock': [0.7, 0.7]})
+    calibration_variables.update({'min_consumption_shock': 0.65})
 
     #CDS
     calibration_variables.update({'covered_cds_prob': 0.5})

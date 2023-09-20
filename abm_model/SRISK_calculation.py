@@ -19,7 +19,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
     #h-period LRMES
     h = 15
     #number of Monte-Carlo simulations
-    S = 100000
+    S = 500000
 
     dcc_garch_sampling = False
     GPU = False
@@ -337,7 +337,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                 current_returns = market_returns[period - nperiods_rolling_window:period]
                 current_returns = current_returns.dropna(axis=1)
 
-                current_market_returns = np.matrix(current_returns['market_return'])
+                current_market_returns = np.array(current_returns['market_return'])
 
                 bootstrap_position = np.append(np.zeros([S,len(current_returns)-h]),np.ones([S,h]),axis=1)
                 bootstrap_position = rng.permuted(bootstrap_position, axis=1)
@@ -345,7 +345,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                 bootstrap_returns_cumulated = np.matmul(bootstrap_position,current_market_returns.T)
                 bootstrap_returns_cumulated = np.exp(bootstrap_returns_cumulated) - 1
 
-                shortfall_boostrap_position = bootstrap_position[np.where(np.any(bootstrap_returns_cumulated<c, axis=1))[0]]
+                shortfall_boostrap_position = bootstrap_position[np.where(bootstrap_returns_cumulated<c)[0]]
 
                 bank_ids = [bank_key for bank_key in current_returns.keys()
                             if 'market_return' not in bank_key]
@@ -353,7 +353,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                 for bank_id in bank_ids:
 
                     if len(shortfall_boostrap_position>0):
-                        current_bank_returns = np.matrix(current_returns[bank_id])
+                        current_bank_returns = np.array(current_returns[bank_id])
                         bootstrap_bank_returns_cumulated = np.matmul(shortfall_boostrap_position,current_bank_returns.T)
                         bootstrap_bank_returns_cumulated = np.exp(bootstrap_bank_returns_cumulated) - 1
 
@@ -371,15 +371,16 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                 current_returns = market_returns[period - nperiods_rolling_window:period]
                 current_returns = current_returns.dropna(axis=1)
 
-                current_market_returns = cp.matrix(current_returns['market_return'])
+                current_market_returns = cp.array(current_returns['market_return'])
 
-                bootstrap_position = cp.append(np.zeros([S,len(current_returns)-h]),np.ones([S,h]),axis=1)
+                bootstrap_position = np.append(np.zeros([S,len(current_returns)-h]),np.ones([S,h]),axis=1)
                 bootstrap_position = rng.permuted(bootstrap_position, axis=1)
+                bootstrap_position = cp.asarray(bootstrap_position)
 
                 bootstrap_returns_cumulated = cp.matmul(bootstrap_position,current_market_returns.T)
                 bootstrap_returns_cumulated = cp.exp(bootstrap_returns_cumulated) - 1
 
-                shortfall_boostrap_position = bootstrap_position[np.where(np.any(bootstrap_returns_cumulated<c, axis=1))[0]]
+                shortfall_boostrap_position = bootstrap_position[cp.where(bootstrap_returns_cumulated<c)[0]]
 
                 bank_ids = [bank_key for bank_key in current_returns.keys()
                             if 'market_return' not in bank_key]
@@ -387,7 +388,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                 for bank_id in bank_ids:
 
                     if len(shortfall_boostrap_position>0):
-                        current_bank_returns = np.matrix(current_returns[bank_id])
+                        current_bank_returns = cp.array(current_returns[bank_id])
                         bootstrap_bank_returns_cumulated = cp.matmul(shortfall_boostrap_position,current_bank_returns.T)
                         bootstrap_bank_returns_cumulated = cp.exp(bootstrap_bank_returns_cumulated) - 1
 
@@ -397,7 +398,7 @@ def calculate_SRISK(equity_by_time, equity_by_bank, debt_by_bank):
                         lrmes.loc[period][bank_id] = np.nan
 
     end = time.time()
-    print(f"SRISK calculation finished in {(end - start) / 60} minutes")
+    print(f"SRISK calculation finished in {(end - start) / 60} minutes",flush=True)
 
     #%% calculation of SRISK from equity, debt and LRMES
     for bank_id in equity_by_bank.keys():
