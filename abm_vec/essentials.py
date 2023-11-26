@@ -107,12 +107,15 @@ def compute_expected_supply_price(firm_ex_supply: ndarray,
 
     firm_supply = firm_supply * (1 + firm_profit)
 
-    statement_1 = (firm_ex_supply > 0) & (firm_price >= market_price)
-    statement_2 = (firm_ex_supply == 0) & (firm_price < market_price)
-    statement_3 = (firm_ex_supply > 0) & (firm_price < market_price)
-    # statement_4 = (firm_ex_supply == 0) & (firm_price >= market_price)
+    statement_1 = (firm_ex_supply > 0) & (firm_price >= market_price) #decrease price
+    statement_2 = (firm_ex_supply == 0) & (firm_price < market_price) #incerease price
+    statement_3 = (firm_ex_supply > 0) & (firm_price < market_price) #decrease supply
+    # statement_4 = (firm_ex_supply == 0) & (firm_price >= market_price) #increase supply
 
     # price and supply adjustment factor
+    # price and supply adjustment upwards is missing, we need separate adj. factors for these
+    # also I would replace the default value to 0, not 1. Shouldn't matter because of the...
+    # np.where statement below, but default is nevertheless 0.
     prc_excess_supply_factor = np.where(statement_1, -probability_excess_supply_zero /
                                         (1 - probability_excess_supply_zero), 1)
     sup_excess_supply_factor = np.where(statement_3, -probability_excess_supply_zero /
@@ -128,6 +131,7 @@ def compute_expected_supply_price(firm_ex_supply: ndarray,
                            firm_supply)
 
     # make sure firm does not go beyond max leverage
+    #lower bound is always binding. Desired supply exceeds max supply by factor ~1000
     firm_supply = np.minimum(firm_supply, firm_prod * (1 + firm_max_leverage) * firm_equity / firm_wage)
     firm_total_wage = firm_wage * firm_supply / firm_prod
 

@@ -31,6 +31,7 @@ def generate_random_entities(calibration_variables: dict) -> tuple:
     bank_equity = bank_df["Total Equity"].values * 10 ** 6
     bank_deposits = bank_df["Total Deposits"].values * 10 ** 6
     bank_loans = bank_df["Total Corp. Loans"].values
+    # t1 cap is a ratio and should not be multiplied by 10^6.
     bank_t1_cap = bank_df["Tier 1 Cap. Ratio"].values * 10 ** 6
 
     # get firm data

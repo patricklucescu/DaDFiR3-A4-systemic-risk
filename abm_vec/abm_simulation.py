@@ -38,7 +38,8 @@ calibration_variables = get_calibration_variables()
 num_firms = len(firm_price)
 num_banks = len(bank_loans)
 # begin the simulation part
-for t in calibration_variables["T"]:
+# iterate over range(), otherwise we have an error.
+for t in range(calibration_variables["T"]):
     # store prior period equity
     prior_period_equity = bank_equity.copy()
     # shuffle firms
@@ -102,6 +103,7 @@ for t in calibration_variables["T"]:
     loans_by_firm = get_non_zero_values_from_matrix(firm_interest)
 
     # compute network connections
+    #notice that we do not have any interbank loans. Probably because there are too many deposits in relation to loan demand
     (loan_firms_interest,
      loan_firms_amount,
      loan_banks_interest,

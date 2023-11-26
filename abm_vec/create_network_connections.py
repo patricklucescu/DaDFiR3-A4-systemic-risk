@@ -93,6 +93,7 @@ def create_network_connections(
                     ib_seller = ib_seller[sorted_indices]
                     # now see which one you can accept
                     for j in range(calibration_variables["max_interbank_loan"]):
+                        #here we also need to check max_credit, not only if the lending bank has enough liquidity
                         if (
                             bank_deposits[ib_seller[j]]
                             + bank_loan_liability[ib_seller[j]]
