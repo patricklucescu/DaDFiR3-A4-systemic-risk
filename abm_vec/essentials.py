@@ -113,9 +113,6 @@ def compute_expected_supply_price(firm_ex_supply: ndarray,
     # statement_4 = (firm_ex_supply == 0) & (firm_price >= market_price) #increase supply
 
     # price and supply adjustment factor
-    # price and supply adjustment upwards is missing, we need separate adj. factors for these
-    # also I would replace the default value to 0, not 1. Shouldn't matter because of the...
-    # np.where statement below, but default is nevertheless 0.
     prc_excess_supply_factor = np.where(statement_1, -probability_excess_supply_zero /
                                         (1 - probability_excess_supply_zero), 1)
     sup_excess_supply_factor = np.where(statement_3, -probability_excess_supply_zero /

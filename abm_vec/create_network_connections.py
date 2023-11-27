@@ -99,7 +99,7 @@ def create_network_connections(
                             + bank_loan_liability[ib_seller[j]]
                             - (credit_interbank + bank_loan_asset[ib_seller[j]])
                             > 0
-                        ):
+                        ) and ((credit_interbank + bank_loan_asset[ib_seller[j]]) > bank_max_credit[ib_seller[j]]):
                             # can issue the interbank loan
                             loan_banks_interest[bank_id, ib_seller[j]] = ib_ir[j]
                             loan_banks_amount[bank_id, ib_seller[j]] = credit_interbank

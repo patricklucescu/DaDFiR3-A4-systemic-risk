@@ -33,10 +33,9 @@ def asses_loan_requests_firms(loan_indicator,
     # Generate random_factor1 for each true element
     random_factor1 = np.random.uniform(0, theta, size=num_true_elements)
     # Generate random_factor2 as before
-    # inidices[1] corresponds to the banks. You need indices[0]. You do not get an error because there are more firms than banks, but you only use probability of default for the first 80 firms.
     random_factor2 = np.tanh(
-        (1 + np.random.uniform(0.9, 1.1, size=num_true_elements) * firm_pd[indices[1]]) *
-        firm_financial_fragility[indices[1]])
+        (1 + np.random.uniform(0.9, 1.1, size=num_true_elements) * firm_pd[indices[0]]) *
+        firm_financial_fragility[indices[0]])
     # Apply calculation only where condition is met
     loan_interest[indices] = policy_rate * (1 + random_factor1 * random_factor2)
     return loan_interest

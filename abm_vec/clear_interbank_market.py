@@ -67,7 +67,6 @@ def clear_interbank_market(num_banks,
                      np.matmul(Pi.T, payments) -
                      payments)
 
-
     money_for_deposits = bank_deposits - bank_current_deposit - np.maximum(deposit_change, 0)
     default_set = np.concatenate((default_set, np.where(bank_earnings < money_for_deposits)[0]))
     # deal with defaulting banks
