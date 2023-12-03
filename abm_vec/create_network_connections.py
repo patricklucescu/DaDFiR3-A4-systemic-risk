@@ -219,5 +219,6 @@ def create_network_connections(
         cds_spread_amount,
         bank_current_deposit,
         firm_equity,
-        cds_dict
+        cds_dict,
+        bank_loan_asset
     )

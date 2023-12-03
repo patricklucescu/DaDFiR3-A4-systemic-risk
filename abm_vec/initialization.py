@@ -3,6 +3,20 @@ import os
 from abm_vec.essentials import get_git_root_directory, compute_pd
 import numpy as np
 import random
+from scipy.stats import multivariate_normal, norm
+
+
+def truncated_pareto_inv(y, alpha, lb, ub):
+    return (- (y * ub ** alpha - y * lb ** alpha - ub ** alpha) / (lb ** alpha * ub ** alpha)) ** (-1/alpha)
+
+
+def boundedParetoNormal(size, lb1, lb2, ub1, ub2, alpha1, alpha2, rho):
+    marginal_distribution = multivariate_normal(mean=[0, 0], cov=[[1, rho], [rho, 1]])
+    random_samples_marginal = marginal_distribution.rvs(size=size)
+    copula_samples = norm.cdf(random_samples_marginal)
+    x1 = truncated_pareto_inv(copula_samples[:, 0], alpha1, lb1, ub1)
+    x2 = truncated_pareto_inv(copula_samples[:, 1], alpha2, lb2, ub2)
+    return x1, x2
 
 
 def generate_random_entities(calibration_variables: dict) -> tuple:
@@ -30,23 +44,23 @@ def generate_random_entities(calibration_variables: dict) -> tuple:
     # get the bank data
     bank_equity = bank_df["Total Equity"].values * 10 ** 6
     bank_deposits = bank_df["Total Deposits"].values * 10 ** 6
-    bank_loans = bank_df["Total Corp. Loans"].values
+    bank_loans = bank_df["Total Corp. Loans"].values * 10 ** 6
     # t1 cap is a ratio and should not be multiplied by 10^6.
     bank_t1_cap = bank_df["Tier 1 Cap. Ratio"].values
 
     # get firm data
-    firm_equity = np.array(
-        [
-            max(
-                calibration_variables["firm_equity_scaling"] * x,
-                calibration_variables["firm_equity_scaling"] * 0.5,
-            )
-            for x in np.random.poisson(
-                calibration_variables["firm_equity_poisson_lambda"],
-                calibration_variables["FIRMS"],
-            )
-        ]
-    )
+    # firm_equity = np.array(
+    #     [
+    #         max(
+    #             calibration_variables["firm_equity_scaling"] * x,
+    #             calibration_variables["firm_equity_scaling"] * 0.5,
+    #         )
+    #         for x in np.random.poisson(
+    #             calibration_variables["firm_equity_poisson_lambda"],
+    #             calibration_variables["FIRMS"],
+    #         )
+    #     ]
+    # )
     firm_prod = np.array(
         [calibration_variables["min_productivity"]] * calibration_variables["FIRMS"]
     )
@@ -90,19 +104,32 @@ def generate_random_entities(calibration_variables: dict) -> tuple:
             - calibration_variables["min_max_leverage"]
         )
     )
-    firm_supply = np.array(
-        [
-            max(
-                calibration_variables["firm_supply_scaling"] * x,
-                calibration_variables["firm_supply_scaling"] * 0.5,
-            )
-            for x in np.random.poisson(
-                calibration_variables["firm_supply_poisson_lambda"],
-                calibration_variables["FIRMS"],
-            )
-        ]
+    # firm_supply = np.array(
+    #     [
+    #         max(
+    #             calibration_variables["firm_supply_scaling"] * x,
+    #             calibration_variables["firm_supply_scaling"] * 0.5,
+    #         )
+    #         for x in np.random.poisson(
+    #             calibration_variables["firm_supply_poisson_lambda"],
+    #             calibration_variables["FIRMS"],
+    #         )
+    #     ]
+    # )
+    firm_equity, firm_supply = boundedParetoNormal(
+        calibration_variables["FIRMS"],
+        calibration_variables['firm_lb1'],
+        calibration_variables['firm_lb2'],
+        calibration_variables['firm_ub1'],
+        calibration_variables['firm_ub2'],
+        calibration_variables['firm_alpha1'],
+        calibration_variables['firm_alpha2'],
+        calibration_variables['firm_rho']
     )
+    firm_equity = np.where(firm_equity > 10 ** 8, 10 ** 6, firm_equity)
+    firm_supply = np.where(firm_supply > 10 ** 10, 10**6, firm_supply)
     firm_profit = np.array([0 for x in range(calibration_variables["FIRMS"])])
+
     firm_price = calibration_variables['market_price'] + np.random.normal(0, 0.01 *
                                                                           calibration_variables['market_price'],
                                                                           calibration_variables["FIRMS"])

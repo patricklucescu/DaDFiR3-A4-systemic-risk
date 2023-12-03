@@ -2,7 +2,7 @@ import numpy as np
 
 
 def check_loan_desire_and_choose_loans(
-    firm_credit_demand, num_firms, num_banks, max_bank_loan
+    firm_credit_demand, num_firms, num_banks, max_bank_loan, bank_weights
 ):
     """
     | Function that assigns banks for firms that need a loan.
@@ -11,6 +11,7 @@ def check_loan_desire_and_choose_loans(
     :param num_firms: Number of firms
     :param num_banks: Number of banks
     :param max_bank_loan: Max banks to which a firm can apply for loan
+    :param bank_weights: Weights for the banks.
     :return: Array of num_firms x num_banks where an entry 1 in (i,j) specified that firm i wants loan from bank j
     """
 
@@ -20,7 +21,7 @@ def check_loan_desire_and_choose_loans(
     firms_needing_loan = np.where(firm_loan_needed)[0]
     # Generate random permutations of bank indices for each firm needing a loan
     random_bank_permutations = np.apply_along_axis(
-        np.random.permutation,
+        lambda row: np.random.choice(row, size=num_banks, replace=False, p=list(bank_weights)),
         1,
         np.tile(np.arange(num_banks), (firms_needing_loan.size, 1)),
     )

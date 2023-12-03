@@ -31,7 +31,7 @@ def clear_interbank_market(num_banks,
     :return:
     """
 
-    # create liability matrix
+    # create liability matrix: assume row ows to column
     liabilities = np.zeros(shape=(num_banks, num_banks))
     # add interbank loans
     liabilities += (1 + loan_banks_interest) * loan_banks_amount

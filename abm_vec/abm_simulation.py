@@ -16,6 +16,7 @@ from abm_vec.clear_interbank_market import clear_interbank_market
 seed_value = 0
 random.seed(seed_value)
 np.random.seed(seed_value)
+use_bank_weights = True
 # get calibration variables for initialization and markov model
 calibration_variables = get_calibration_variables()
 
@@ -35,10 +36,15 @@ calibration_variables = get_calibration_variables()
     firm_max_leverage,
 ) = generate_random_entities(calibration_variables)
 
+
 num_firms = len(firm_price)
 num_banks = len(bank_loans)
+
+if use_bank_weights:
+    bank_weights = bank_loans / sum(bank_loans)
+else:
+    bank_weights = np.array([1/num_banks] * num_banks)
 # begin the simulation part
-# iterate over range(), otherwise we have an error.
 for t in range(calibration_variables["T"]):
     # store prior period equity
     prior_period_equity = bank_equity.copy()
@@ -67,7 +73,7 @@ for t in range(calibration_variables["T"]):
     )
     # for each firm compute expected supply and see who wants loans
     firm_wage = wages_adj(firm_wage, calibration_variables["min_wage"])
-    firm_price, firm_supply, firm_total_wage = compute_expected_supply_price(
+    firm_price, firm_supply, firm_total_wage, supply_threshold_breach = compute_expected_supply_price(
         firm_ex_supply,
         firm_supply,
         firm_price,
@@ -83,7 +89,7 @@ for t in range(calibration_variables["T"]):
     firm_credit_demand = np.maximum(0, firm_total_wage - firm_equity)
     firm_financial_fragility = firm_credit_demand / firm_equity
     loan_indicator = check_loan_desire_and_choose_loans(
-        firm_credit_demand, num_firms, num_banks, calibration_variables["max_bank_loan"]
+        firm_credit_demand, num_firms, num_banks, calibration_variables["max_bank_loan"], bank_weights
     )
 
     # let bank give interest rates
@@ -113,7 +119,8 @@ for t in range(calibration_variables["T"]):
      cds_spread_amount,
      bank_current_deposit,
      firm_equity,
-     cds_dict
+     cds_dict,
+     bank_loan_asset
      ) = create_network_connections(loans_by_firm,
                                     calibration_variables,
                                     num_firms,
