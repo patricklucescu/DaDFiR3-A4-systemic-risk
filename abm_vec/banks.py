@@ -1,13 +1,15 @@
 import numpy as np
 
 
-def asses_loan_requests_firms(loan_indicator,
-                              firm_credit_demand,
-                              bank_max_credit,
-                              firm_pd,
-                              firm_financial_fragility,
-                              policy_rate,
-                              theta):
+def asses_loan_requests_firms(
+    loan_indicator,
+    firm_credit_demand,
+    bank_max_credit,
+    firm_pd,
+    firm_financial_fragility,
+    policy_rate,
+    theta,
+):
     """
     | Asses firms loan requests and compute interest rates.
 
@@ -22,7 +24,9 @@ def asses_loan_requests_firms(loan_indicator,
     """
 
     # Conditions
-    condition = (loan_indicator > 0) & (firm_credit_demand[:, np.newaxis] < bank_max_credit)
+    condition = (loan_indicator > 0) & (
+        firm_credit_demand[:, np.newaxis] < bank_max_credit
+    )
     # Initialize interest array
     loan_interest = np.zeros_like(loan_indicator, dtype=float)
     # Find indices where condition is True
@@ -34,17 +38,15 @@ def asses_loan_requests_firms(loan_indicator,
     random_factor1 = np.random.uniform(0, theta, size=num_true_elements)
     # Generate random_factor2 as before
     random_factor2 = np.tanh(
-        (1 + np.random.uniform(0.9, 1.1, size=num_true_elements) * firm_pd[indices[0]]) *
-        firm_financial_fragility[indices[0]])
+        (1 + np.random.uniform(0.9, 1.1, size=num_true_elements) * firm_pd[indices[0]])
+        * firm_financial_fragility[indices[0]]
+    )
     # Apply calculation only where condition is met
     loan_interest[indices] = policy_rate * (1 + random_factor1 * random_factor2)
     return loan_interest
 
 
-def asses_interbank_loans(financial_fragility,
-                          policy_rate,
-                          num_requests,
-                          theta):
+def asses_interbank_loans(financial_fragility, policy_rate, num_requests, theta):
     """
     | Compute the interbank loan request for a bank. Similar to firms but a bit simpler.
 
@@ -59,9 +61,7 @@ def asses_interbank_loans(financial_fragility,
     return policy_rate * (1 + random_factor1 * np.tanh(financial_fragility))
 
 
-def provide_cds_spread(prob_default,
-                       policy_rate,
-                       interest_rate):
+def provide_cds_spread(prob_default, policy_rate, interest_rate):
     """
     | Function calculates and provides the spread value for a credit default swap (CDS) based on the Hull CDS
     valuation model for a one-period model.
@@ -82,12 +82,7 @@ def provide_cds_spread(prob_default,
     return (1 - recover_rate - A * recover_rate) * q * v / (q * (u + e) + pi * u)
 
 
-def check_cds(deposit,
-              loan_liability,
-              loan_asset,
-              equity,
-              cds_asset,
-              premium):
+def check_cds(deposit, loan_liability, loan_asset, equity, cds_asset, premium):
     """
     | Checks if the CDS can be granted based on the maximum credit limit and other loan and asset amounts.
 
@@ -100,5 +95,3 @@ def check_cds(deposit,
     :return: True if CDS can be granted, False otherwise
     """
     return deposit + loan_liability + equity - loan_asset + cds_asset >= premium
-
-

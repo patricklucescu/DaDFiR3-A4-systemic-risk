@@ -1,14 +1,16 @@
 from abm_model.markov_model import MarkovModel
 
 
-def clear_firm_default(firms: dict,
-                       banks: dict,
-                       economy_state: MarkovModel,
-                       good_consumption: list,
-                       good_consumption_std: list,
-                       min_consumption: float,
-                       max_consumption: float,
-                       firm_equity_scaling: float):
+def clear_firm_default(
+    firms: dict,
+    banks: dict,
+    economy_state: MarkovModel,
+    good_consumption: list,
+    good_consumption_std: list,
+    min_consumption: float,
+    max_consumption: float,
+    firm_equity_scaling: float,
+):
     """
     |Clear the good markets and see what firms default. Additionally, for each CDS compute the recovery rate.
 
@@ -28,23 +30,32 @@ def clear_firm_default(firms: dict,
     consumption_std = good_consumption_std[economy_state.current_state]
     for firm_id in firms.keys():
         firms[firm_id].adjust_production()
-        firms[firm_id].produce_supply_consumption(min_consumption,
-                                                  max_consumption,
-                                                  overall_consumption,
-                                                  consumption_std)
+        firms[firm_id].produce_supply_consumption(
+            min_consumption, max_consumption, overall_consumption, consumption_std
+        )
 
     # see which firms remain solvent
-    defaulted_firms = [firms[firm_id].idx for firm_id in firms.keys() if firms[firm_id].check_default()]
+    defaulted_firms = [
+        firms[firm_id].idx for firm_id in firms.keys() if firms[firm_id].check_default()
+    ]
     # clear firm loan payments and update cds with recovery rate
     total_firm_equity = 0
     for firm_id in firms.keys():
         loans = firms[firm_id].loans
-        total_loans = sum([(1 + loan.interest_rate) * loan.notional_amount for loan in loans])
-        adjustment_factor = total_loans if firm_id not in defaulted_firms else firms[firm_id].equity
+        total_loans = sum(
+            [(1 + loan.interest_rate) * loan.notional_amount for loan in loans]
+        )
+        adjustment_factor = (
+            total_loans if firm_id not in defaulted_firms else firms[firm_id].equity
+        )
         for loan in loans:
             # payback
-            banks[loan.lender].money_from_firm_loans += ((1 + loan.interest_rate) * loan.notional_amount
-                                                         * adjustment_factor / total_loans)
+            banks[loan.lender].money_from_firm_loans += (
+                (1 + loan.interest_rate)
+                * loan.notional_amount
+                * adjustment_factor
+                / total_loans
+            )
 
         firms[firm_id].equity -= adjustment_factor
         total_firm_equity += firms[firm_id].equity
@@ -53,8 +64,7 @@ def clear_firm_default(firms: dict,
         if len(loans) > 0:
             firms[firm_id].recovery_rate = adjustment_factor / total_loans
 
-
-        #remove smallest firms
+        # remove smallest firms
         # if 0 < firms[firm_id].equity <= 0.10 * firm_equity_scaling:
         #     defaulted_firms.append(firm_id)
 

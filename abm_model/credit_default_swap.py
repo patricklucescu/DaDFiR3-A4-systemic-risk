@@ -1,18 +1,19 @@
-
-
 class CDS:
     """
     | CDS class represents a Credit Default Swap.
     """
-    def __init__(self,
-                 buyer: str,
-                 seller: str,
-                 reference_entity: str,
-                 default_probability: float,
-                 notional_amount: float,
-                 spread: float,
-                 tenor: float=1,
-                 risk_free_rate: float=0):
+
+    def __init__(
+        self,
+        buyer: str,
+        seller: str,
+        reference_entity: str,
+        default_probability: float,
+        notional_amount: float,
+        spread: float,
+        tenor: float = 1,
+        risk_free_rate: float = 0,
+    ):
         """
         | Constructor method that initializes the CDS object with the specific parameters.
 

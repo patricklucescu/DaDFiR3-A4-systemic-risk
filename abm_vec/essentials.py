@@ -1,8 +1,9 @@
-import numpy as np
-from numpy import ndarray
-from collections import defaultdict
 import os
+from collections import defaultdict
+
+import numpy as np
 from git import Repo
+from numpy import ndarray
 
 max_increase_wages = 0.02
 max_increase_prices = 0.02

@@ -1,7 +1,9 @@
+import random
+
 import numpy as np
 from numpy import ndarray
-import random
-from abm_vec.banks import asses_interbank_loans, provide_cds_spread, check_cds
+
+from abm_vec.banks import asses_interbank_loans, check_cds, provide_cds_spread
 
 
 def create_network_connections(
@@ -93,13 +95,16 @@ def create_network_connections(
                     ib_seller = ib_seller[sorted_indices]
                     # now see which one you can accept
                     for j in range(calibration_variables["max_interbank_loan"]):
-                        #here we also need to check max_credit, not only if the lending bank has enough liquidity
+                        # here we also need to check max_credit, not only if the lending bank has enough liquidity
                         if (
                             bank_deposits[ib_seller[j]]
                             + bank_loan_liability[ib_seller[j]]
                             - (credit_interbank + bank_loan_asset[ib_seller[j]])
                             > 0
-                        ) and ((credit_interbank + bank_loan_asset[ib_seller[j]]) > bank_max_credit[ib_seller[j]]):
+                        ) and (
+                            (credit_interbank + bank_loan_asset[ib_seller[j]])
+                            > bank_max_credit[ib_seller[j]]
+                        ):
                             # can issue the interbank loan
                             loan_banks_interest[bank_id, ib_seller[j]] = ib_ir[j]
                             loan_banks_amount[bank_id, ib_seller[j]] = credit_interbank
@@ -207,7 +212,11 @@ def create_network_connections(
                             cds_spread_amount[buyer, seller] += total
                             transaction_buyer.append(buyer)
                             transaction_seller.append(seller)
-                        cds_dict[firm_id] = [credit, transaction_buyer, transaction_seller]
+                        cds_dict[firm_id] = [
+                            credit,
+                            transaction_buyer,
+                            transaction_seller,
+                        ]
                 break
     return (
         loan_firms_interest,
@@ -220,5 +229,5 @@ def create_network_connections(
         bank_current_deposit,
         firm_equity,
         cds_dict,
-        bank_loan_asset
+        bank_loan_asset,
     )

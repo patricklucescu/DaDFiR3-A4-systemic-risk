@@ -1,9 +1,8 @@
-
-
 class LogMessage:
     """
     | LogMessage class represents a log message with a message, time, and data.
     """
+
     def __init__(self, message: str, time: float, data: list):
         """
         | Initializes a LogMessage object with the specified message, time, and data.

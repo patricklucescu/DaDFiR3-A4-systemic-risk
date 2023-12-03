@@ -1,16 +1,17 @@
-
-
 class Loan:
     """
     | Loan class which describes a loan contract between a borrower and a lender.
     """
-    def __init__(self,
-                 lender,
-                 borrower,
-                 notional_amount,
-                 financial_fragility_borrower,
-                 prob_default_borrower=None,
-                 interest_rate=None):
+
+    def __init__(
+        self,
+        lender,
+        borrower,
+        notional_amount,
+        financial_fragility_borrower,
+        prob_default_borrower=None,
+        interest_rate=None,
+    ):
         """
         | Set up the characteristics of a loan.
 

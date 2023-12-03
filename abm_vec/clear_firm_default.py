@@ -12,7 +12,7 @@ def clear_firm_default(
     calibration_variables,
     num_firms,
     firm_price,
-    economy_state
+    economy_state,
 ):
     """
     | This function clears the defaulting firms and updates the equity of the firms

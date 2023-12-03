@@ -1,18 +1,20 @@
 import numpy as np
 
 
-def clear_interbank_market(num_banks,
-                           loan_banks_interest,
-                           loan_banks_amount,
-                           recovery_rate,
-                           defaulting_firms,
-                           loan_firm_value,
-                           bank_equity,
-                           deposit_change,
-                           bank_deposits,
-                           bank_current_deposit,
-                           cds_spread_amount,
-                           cds_dict):
+def clear_interbank_market(
+    num_banks,
+    loan_banks_interest,
+    loan_banks_amount,
+    recovery_rate,
+    defaulting_firms,
+    loan_firm_value,
+    bank_equity,
+    deposit_change,
+    bank_deposits,
+    bank_current_deposit,
+    cds_spread_amount,
+    cds_dict,
+):
     """
     | This function clears the interbank market and updates the equity and deposits of the banks.
 
@@ -41,12 +43,14 @@ def clear_interbank_market(num_banks,
     for firm_id in defaulting_firms:
         if firm_id in cds_dict:
             cds_liability = np.zeros((num_banks, num_banks))
-            cds_liability[cds_dict[firm_id][2], cds_dict[firm_id][1]] = (1 - recovery_rate[firm_id]) * cds_dict[firm_id][0]
+            cds_liability[cds_dict[firm_id][2], cds_dict[firm_id][1]] = (
+                1 - recovery_rate[firm_id]
+            ) * cds_dict[firm_id][0]
             liabilities += cds_liability
 
     # see which bank are defaulting
     Lbar = np.sum(liabilities, axis=1)
-    Lbar_inverse = np.where(Lbar != 0, 1/Lbar, 0)
+    Lbar_inverse = np.where(Lbar != 0, 1 / Lbar, 0)
     Pi = np.matmul(np.diag(Lbar_inverse), liabilities)
     default = True
     default_set = 0.0
@@ -58,38 +62,46 @@ def clear_interbank_market(num_banks,
         old_payments = payments.copy()
         default_set = [i for i in range(len(wealth)) if (wealth[i] - Lbar[i]) < 0]
         payments[default_set] = wealth[default_set]
-        if sum(1 for i in range(len(payments)) if np.abs(payments[i] - old_payments[i]) < 10 ** -6) == len(Lbar):
+        if sum(
+            1
+            for i in range(len(payments))
+            if np.abs(payments[i] - old_payments[i]) < 10**-6
+        ) == len(Lbar):
             default = False
 
-    bank_earnings = (bank_equity +
-                     money_from_loan +
-                     np.minimum(deposit_change, 0) +
-                     np.matmul(Pi.T, payments) -
-                     payments)
+    bank_earnings = (
+        bank_equity
+        + money_from_loan
+        + np.minimum(deposit_change, 0)
+        + np.matmul(Pi.T, payments)
+        - payments
+    )
 
-    money_for_deposits = bank_deposits - bank_current_deposit - np.maximum(deposit_change, 0)
-    default_set = np.concatenate((default_set, np.where(bank_earnings < money_for_deposits)[0]))
+    money_for_deposits = (
+        bank_deposits - bank_current_deposit - np.maximum(deposit_change, 0)
+    )
+    default_set = np.concatenate(
+        (default_set, np.where(bank_earnings < money_for_deposits)[0])
+    )
     # deal with defaulting banks
     if len(default_set) > 0:
         bank_equity[default_set] = 0
         bank_current_deposit[default_set] += bank_earnings[default_set]
-        bank_deposits[default_set] = bank_current_deposit[default_set] + np.maximum(deposit_change[default_set], 0)
+        bank_deposits[default_set] = bank_current_deposit[default_set] + np.maximum(
+            deposit_change[default_set], 0
+        )
     # deal with non defaulting banks
     non_default = ~np.isin(np.arange(num_banks), default_set)
     bank_current_deposit[non_default] += money_for_deposits[non_default]
-    bank_deposits[non_default] = bank_current_deposit[non_default] + np.maximum(deposit_change[non_default], 0)
-    bank_equity[non_default] = bank_earnings[non_default] - money_for_deposits[non_default]
+    bank_deposits[non_default] = bank_current_deposit[non_default] + np.maximum(
+        deposit_change[non_default], 0
+    )
+    bank_equity[non_default] = (
+        bank_earnings[non_default] - money_for_deposits[non_default]
+    )
 
-    return (default_set,
-            bank_equity,
-            bank_deposits,
-            )
-
-
-
-
-
-
-
-
-
+    return (
+        default_set,
+        bank_equity,
+        bank_deposits,
+    )

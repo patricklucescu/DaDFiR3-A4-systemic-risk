@@ -1,14 +1,17 @@
-from abm_model.loan import Loan
-from abm_model.baseclass import BaseAgent
 import random
+
 import numpy as np
+
+from abm_model.baseclass import BaseAgent
 from abm_model.essentials import *
+from abm_model.loan import Loan
 
 
 class BaseFirm(BaseAgent):
     """
     | BaseFirm class represents the base agent for a firm in the ABM model.
     """
+
     market_price = None
     min_wage = None
     min_max_leverage = None
@@ -62,16 +65,18 @@ class BaseFirm(BaseAgent):
 
 
 class Firm(BaseFirm):
-    def __init__(self,
-                 idx,
-                 supply,
-                 excess_supply,
-                 price,
-                 wage,
-                 equity,
-                 productivity,
-                 max_leverage_firm,
-                 leverage_severity):
+    def __init__(
+        self,
+        idx,
+        supply,
+        excess_supply,
+        price,
+        wage,
+        equity,
+        productivity,
+        max_leverage_firm,
+        leverage_severity,
+    ):
         """
         | Constructor method that initializes the firm object with the specific parameters.
 
@@ -95,7 +100,10 @@ class Firm(BaseFirm):
         self.productivity = productivity
         self.max_leverage = max_leverage_firm
         # initialize other class variables
-        self.default_probability = leverage_severity*((1+max_leverage_firm-self.min_max_leverage)/(1+self.max_max_leverage-self.min_max_leverage))
+        self.default_probability = leverage_severity * (
+            (1 + max_leverage_firm - self.min_max_leverage)
+            / (1 + self.max_max_leverage - self.min_max_leverage)
+        )
         self.loans = []
         self.total_wages = None
         self.credit_demand = None
@@ -110,16 +118,23 @@ class Firm(BaseFirm):
         | Compute the expected supply and prices for the firm.
         """
         self.wage = max([self.min_wage, self.wage * (1 + wages_adj())])
-        self.price, self.supply = compute_expected_supply_price(self.excess_supply,
-                                                                self.supply,
-                                                                self.price,
-                                                                self.market_price,
-                                                                self.wage,
-                                                                self.productivity,
-                                                                self.probability_excess_supply_zero,
-                                                                self.profit)
+        self.price, self.supply = compute_expected_supply_price(
+            self.excess_supply,
+            self.supply,
+            self.price,
+            self.market_price,
+            self.wage,
+            self.productivity,
+            self.probability_excess_supply_zero,
+            self.profit,
+        )
         # make sure firm does not go beyond max leverage
-        self.supply = min([self.productivity * (self.max_leverage + 1) * self.equity / self.wage, self.supply])
+        self.supply = min(
+            [
+                self.productivity * (self.max_leverage + 1) * self.equity / self.wage,
+                self.supply,
+            ]
+        )
         # compute total wages
         self.total_wages = self.wage * self.supply / self.productivity
 
@@ -132,13 +147,16 @@ class Firm(BaseFirm):
         self.financial_fragility = self.credit_demand / self.equity
         if self.credit_demand > 0:
             # pick random banks
-            potential_lenders = [Loan(lender=x,
-                                      borrower=self.idx,
-                                      notional_amount=self.credit_demand,
-                                      financial_fragility_borrower=self.financial_fragility,
-                                      prob_default_borrower=self.default_probability,
-                                      ) for x in random.choices(self.bank_ids, k=self.max_bank_loan)
-                                 ]
+            potential_lenders = [
+                Loan(
+                    lender=x,
+                    borrower=self.idx,
+                    notional_amount=self.credit_demand,
+                    financial_fragility_borrower=self.financial_fragility,
+                    prob_default_borrower=self.default_probability,
+                )
+                for x in random.choices(self.bank_ids, k=self.max_bank_loan)
+            ]
             self.potential_lenders = potential_lenders
         else:
             self.potential_lenders = []
@@ -153,11 +171,13 @@ class Firm(BaseFirm):
             self.supply = self.equity * self.productivity / self.wage
             self.total_wages = self.equity
 
-    def produce_supply_consumption(self,
-                                   min_consumption: float,
-                                   max_consumption: float,
-                                   overall_consumption: float,
-                                   consumption_std: float):
+    def produce_supply_consumption(
+        self,
+        min_consumption: float,
+        max_consumption: float,
+        overall_consumption: float,
+        consumption_std: float,
+    ):
         """
         | Produce the supply and handle consumption based on certain parameters.
 
@@ -168,8 +188,12 @@ class Firm(BaseFirm):
         """
 
         self.equity -= self.total_wages
-        actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
-                                                                                  consumption_std)), max_consumption)
+        actual_consumption_percentage = min(
+            max(
+                min_consumption, np.random.normal(overall_consumption, consumption_std)
+            ),
+            max_consumption,
+        )
         self.equity += self.price * actual_consumption_percentage * self.supply
         self.excess_supply = (1 - actual_consumption_percentage) * self.supply
 
@@ -190,8 +214,9 @@ class Firm(BaseFirm):
 
         :return: True if the firm has defaulted, False otherwise.
         """
-        if self.equity < sum([(1+loan.interest_rate) * loan.notional_amount for loan in self.loans]):
+        if self.equity < sum(
+            [(1 + loan.interest_rate) * loan.notional_amount for loan in self.loans]
+        ):
             # we have default of the entity
             return True
         return False
-    

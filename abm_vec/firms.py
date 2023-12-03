@@ -21,7 +21,9 @@ def check_loan_desire_and_choose_loans(
     firms_needing_loan = np.where(firm_loan_needed)[0]
     # Generate random permutations of bank indices for each firm needing a loan
     random_bank_permutations = np.apply_along_axis(
-        lambda row: np.random.choice(row, size=num_banks, replace=False, p=list(bank_weights)),
+        lambda row: np.random.choice(
+            row, size=num_banks, replace=False, p=list(bank_weights)
+        ),
         1,
         np.tile(np.arange(num_banks), (firms_needing_loan.size, 1)),
     )
@@ -95,6 +97,9 @@ def get_non_zero_values_from_matrix(matrix):
     dict: A dictionary with row indices as keys and tuples of non-zero values and indices as values.
     """
     return {
-        row_index: [(col_index, value) for col_index, value in zip(np.where(row != 0)[0], row[row != 0])]
+        row_index: [
+            (col_index, value)
+            for col_index, value in zip(np.where(row != 0)[0], row[row != 0])
+        ]
         for row_index, row in enumerate(matrix)
     }

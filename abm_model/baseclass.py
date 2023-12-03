@@ -5,6 +5,7 @@ class BaseAgent:
     """
     | Base agent that stores simulation variables.
     """
+
     policy_rate = None
     firm_ids = None
     bank_ids = None
@@ -21,8 +22,13 @@ class BaseAgent:
         :param new_value: New bank probabilities.
         """
         total_gross_loans = sum([bank.gross_loans for bank in banks.values()])
-        
-        cls.bank_probabilities = OrderedDict({bank_id: banks[bank_id].gross_loans / total_gross_loans for bank_id in banks.keys()})
+
+        cls.bank_probabilities = OrderedDict(
+            {
+                bank_id: banks[bank_id].gross_loans / total_gross_loans
+                for bank_id in banks.keys()
+            }
+        )
 
     @classmethod
     def change_policy_rate(cls, new_value):
