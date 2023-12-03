@@ -1,5 +1,5 @@
-from abm_euro.loan import Loan
-from abm_euro.baseclass import BaseAgent
+from abm_model.loan import Loan
+from abm_model.baseclass import BaseAgent
 import numpy as np
 import random
 
@@ -55,7 +55,7 @@ class Bank(BaseBank):
         :param float capital_requirement: The capital requirement of the bank.
         :param float covered_cds_prob: The probability of a covered credit default swap (CDS) being used by the bank.
         :param float naked_cds_prob: The probability of a naked CDS being used by the bank.
-        :param flaot tier_1_cap: The Tier 1 capital ration.
+        :param float tier_1_cap: The Tier 1 capital ration.
         :param float gross_loans: The total amount of loans.
         """
         super().__init__()
@@ -72,6 +72,8 @@ class Bank(BaseBank):
         self.deposit_change = None
         self.current_deposits = None
         self.earnings = None
+        self.profit = None
+        self.prev_equity = equity
         self.tier_1_cap = tier_1_cap
         self.gross_loans = gross_loans
 
@@ -201,3 +203,4 @@ class Bank(BaseBank):
         self.deposit_change = None
         self.current_deposits = None
         self.earnings = None
+        

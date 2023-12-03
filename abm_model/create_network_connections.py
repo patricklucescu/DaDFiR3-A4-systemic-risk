@@ -13,7 +13,8 @@ def create_network_connections(loan_offers: dict,
                                banks_idx: list,
                                covered_cds_prob: float,
                                naked_cds_prob: float,
-                               t: float) -> tuple:
+                               t: float,
+                               cds_fractional: float) -> tuple:
     """
     | Create the Bank-to-Firm Loans, Bank-to-Bank Loans and the Bank-to-Bank CDS contracts.
 
@@ -25,6 +26,7 @@ def create_network_connections(loan_offers: dict,
     :param covered_cds_prob: Probability a bank wants to buy a covered CDS.
     :param naked_cds_prob: Probability a bank wants to buy a naked CDS.
     :param t: Simulation current time.
+    :param cds_fractional: Fraction of notional that is being insured
     :return: List of variables of interest.
     """
 
@@ -93,12 +95,19 @@ def create_network_connections(loan_offers: dict,
                     # determine which banks want cds on this loan
                     interested_cds_buyers = [bank_id for bank_id in banks if
                                              (banks[bank_id].decide_cds(covered=(loan.lender == bank_id)))]
+                    #if every bank wants a naked cds, there are no counterparties. Randomly pick ~75% of banks to be buyers
+                    #and ~25% to be sellers. The covered cds is always included in that case.
+                    interested_naked_cds_buyers = [bank_id for bank_id in interested_cds_buyers if bank_id != loan.lender]
+                    if len(interested_naked_cds_buyers) == (len(banks)-1):
+                        interested_cds_buyers = random.choices(interested_naked_cds_buyers, k=int(round(0.75*len(banks),0)))
+                        interested_cds_buyers.append(loan.lender)
+
                     # for each interested buyer, get offers from various bank according to max_cds_requests,
                     # including only banks that are neither the lender bank itself nor any interested buyer (and
                     # neither the bank as its own counterparty)
                     cds_offers = [
                         {bank_id_buyer: CDS(bank_id_buyer, counterparty_id, loan.borrower, loan.prob_default_borrower,
-                                            loan.notional_amount, banks[counterparty_id].provide_cds_spread(loan))}
+                                            loan.notional_amount*cds_fractional, banks[counterparty_id].provide_cds_spread(loan))}
                         for bank_id_buyer in interested_cds_buyers
                         for counterparty_id in random.choices([x for x in banks_idx if
                                                                (x != banks[bank_id_buyer].idx and x != loan.lender
@@ -112,7 +121,7 @@ def create_network_connections(loan_offers: dict,
                     cds_offers = {bank_id: cds_offers[bank_id][0] for bank_id in cds_offers}
                     # see if cds is affordable for buyer, add to transaction-list if so
                     cds_transactions = {bank_id: cds_offers[bank_id] for bank_id in cds_offers
-                                        if banks[bank_id].check_cds(cds_offers[bank_id].spread * loan.notional_amount)}
+                                        if banks[bank_id].check_cds(cds_offers[bank_id].spread * loan.notional_amount*cds_fractional)}
                     # enter transactions
                     for bank_id in cds_transactions:
                         banks[cds_transactions[bank_id].buyer].assets['cds'].append(cds_transactions[bank_id])

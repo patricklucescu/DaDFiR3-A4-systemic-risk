@@ -1,6 +1,7 @@
 from abm_model.loan import Loan
 from abm_model.baseclass import BaseAgent
 import random
+import numpy as np
 from abm_model.essentials import *
 
 
@@ -10,7 +11,9 @@ class BaseFirm(BaseAgent):
     """
     market_price = None
     min_wage = None
-    max_leverage = None
+    min_max_leverage = None
+    max_max_leverage = None
+    probability_excess_supply_zero = None
 
     @classmethod
     def change_market_price(cls, new_value: float):
@@ -31,13 +34,31 @@ class BaseFirm(BaseAgent):
         cls.min_wage = new_value
 
     @classmethod
-    def change_max_leverage(cls, new_value: float):
+    def change_min_max_leverage(cls, new_value: int):
         """
         | Change the maximum leverage of the base firm.
 
         :param new_value: The new maximum leverage.
         """
-        cls.max_leverage = new_value
+        cls.min_max_leverage = new_value
+
+    @classmethod
+    def change_max_max_leverage(cls, new_value: int):
+        """
+        | Change the maximum leverage of the base firm.
+
+        :param new_value: The new maximum leverage.
+        """
+        cls.max_max_leverage = new_value
+
+    @classmethod
+    def change_prob_excess_supply(cls, new_value: int):
+        """
+        | Change the maximum leverage of the base firm.
+
+        :param new_value: The new maximum leverage.
+        """
+        cls.probability_excess_supply_zero = new_value
 
 
 class Firm(BaseFirm):
@@ -49,7 +70,8 @@ class Firm(BaseFirm):
                  wage,
                  equity,
                  productivity,
-                 default_probability):
+                 max_leverage_firm,
+                 leverage_severity):
         """
         | Constructor method that initializes the firm object with the specific parameters.
 
@@ -60,7 +82,8 @@ class Firm(BaseFirm):
         :param wage: The wage the firm pays for the labour.
         :param equity: Equity of the firm.
         :param productivity: Productivity of the firm.
-        :param default_probability: Default probability of the firm.
+        :param max_leverage_firm: Firm specific maximum leverage of the firm.
+        :param leverage_severity: Severity of the maximum leverage for default prob.
         """
         super().__init__()
         self.idx = idx
@@ -70,15 +93,17 @@ class Firm(BaseFirm):
         self.wage = wage
         self.equity = equity
         self.productivity = productivity
-        self.default_probability = default_probability
+        self.max_leverage = max_leverage_firm
         # initialize other class variables
+        self.default_probability = leverage_severity*((1+max_leverage_firm-self.min_max_leverage)/(1+self.max_max_leverage-self.min_max_leverage))
         self.loans = []
         self.total_wages = None
         self.credit_demand = None
         self.financial_fragility = None
         self.potential_lenders = None
         self.recovery_rate = None
-        self.prev_equity = None
+        self.prev_equity = equity
+        self.profit = 0
 
     def compute_expected_supply_and_prices(self):
         """
@@ -90,7 +115,9 @@ class Firm(BaseFirm):
                                                                 self.price,
                                                                 self.market_price,
                                                                 self.wage,
-                                                                self.productivity)
+                                                                self.productivity,
+                                                                self.probability_excess_supply_zero,
+                                                                self.profit)
         # make sure firm does not go beyond max leverage
         self.supply = min([self.productivity * (self.max_leverage + 1) * self.equity / self.wage, self.supply])
         # compute total wages
@@ -139,7 +166,7 @@ class Firm(BaseFirm):
         :param overall_consumption: The overall consumption.
         :param consumption_std: The standard deviation of consumption.
         """
-        self.prev_equity = self.equity
+
         self.equity -= self.total_wages
         actual_consumption_percentage = min(max(min_consumption, np.random.normal(overall_consumption,
                                                                                   consumption_std)), max_consumption)
@@ -167,3 +194,4 @@ class Firm(BaseFirm):
             # we have default of the entity
             return True
         return False
+    

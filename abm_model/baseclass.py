@@ -1,3 +1,4 @@
+from collections import OrderedDict
 
 
 class BaseAgent:
@@ -10,6 +11,18 @@ class BaseAgent:
     max_interbank_loan = None
     max_bank_loan = None
     max_cds_requests = None
+    bank_probabilities = None
+
+    @classmethod
+    def change_bank_probabilities(cls, banks):
+        """
+        | Change the bank probabilities.
+
+        :param new_value: New bank probabilities.
+        """
+        total_gross_loans = sum([bank.gross_loans for bank in banks.values()])
+        
+        cls.bank_probabilities = OrderedDict({bank_id: banks[bank_id].gross_loans / total_gross_loans for bank_id in banks.keys()})
 
     @classmethod
     def change_policy_rate(cls, new_value):
