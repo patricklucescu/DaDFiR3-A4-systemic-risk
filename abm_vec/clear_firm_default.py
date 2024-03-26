@@ -1,19 +1,20 @@
 import numpy as np
+from numpy import ndarray
 
 
 def clear_firm_default(
-    loan_firms_interest,
-    loan_firms_amount,
-    firm_equity,
-    firm_total_wage,
-    firm_supply,
-    firm_prod,
-    firm_wage,
-    calibration_variables,
-    num_firms,
-    firm_price,
-    economy_state,
-):
+    loan_firms_interest: ndarray,
+    loan_firms_amount: ndarray,
+    firm_equity: ndarray,
+    firm_total_wage: ndarray,
+    firm_supply: ndarray,
+    firm_prod: ndarray,
+    firm_wage: ndarray,
+    calibration_variables: dict,
+    num_firms: int,
+    firm_price: int,
+    economy_state: int,
+) -> tuple:
     """
     | This function clears the defaulting firms and updates the equity of the firms
 

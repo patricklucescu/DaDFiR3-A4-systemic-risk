@@ -1,18 +1,37 @@
 import numpy as np
+from numpy import ndarray
 
 
 def check_loan_desire_and_choose_loans(
-    firm_credit_demand, num_firms, num_banks, max_bank_loan, bank_weights
-):
+    firm_credit_demand: ndarray,
+    num_firms: ndarray,
+    num_banks: ndarray,
+    max_bank_loan: ndarray,
+    bank_weights: ndarray,
+) -> ndarray:
     """
-    | Function that assigns banks for firms that need a loan.
+    | The function identifies firms that want to take a loan and randomly selects banks to which they apply for a loan.
+
+    | The following steps are performed:
+
+    #. Identifies firms that need a loan, determined by whether their credit demand is greater than zero.
+
+    #. For each firm identified as needing a loan, the function generates a random permutation of bank indices,
+        respecting the `bank_weights` which indicate the likelihood of choosing each bank.
+
+    #. From these permutations, the function selects the first `max_bank_loan` banks for each firm, representing the
+    banks to which the firm will apply.
+
+    # **Constructing Loan Indicator Matrix**:
+        *  The function then constructs a loan indicator matrix of size num_firms x num_banks.
+        *  The entry (i,j) in the matrix is 1 if firm i wants a loan from bank j, and 0 otherwise.
 
     :param firm_credit_demand: Vector of credit demand for each firm
     :param num_firms: Number of firms
     :param num_banks: Number of banks
     :param max_bank_loan: Max banks to which a firm can apply for loan
     :param bank_weights: Weights for the banks.
-    :return: Array of num_firms x num_banks where an entry 1 in (i,j) specified that firm i wants loan from bank j
+    :return: Array of num_firms x num_banks where an entry of 1 in (i,j) specifies that firm i wants a loan from bank j
     """
 
     firm_loan_needed = firm_credit_demand > 0
@@ -45,17 +64,17 @@ def get_loan_priority(row):
 
 
 def shuffle_firms(
-    num_firms,
-    firm_equity,
-    firm_prod,
-    firm_ex_supply,
-    firm_wage,
-    firm_pd,
-    firm_supply,
-    firm_profit,
-    firm_price,
-    firm_max_leverage,
-):
+    num_firms: ndarray,
+    firm_equity: ndarray,
+    firm_prod: ndarray,
+    firm_ex_supply: ndarray,
+    firm_wage: ndarray,
+    firm_pd: ndarray,
+    firm_supply: ndarray,
+    firm_profit: ndarray,
+    firm_price: ndarray,
+    firm_max_leverage: ndarray,
+) -> tuple:
     """
     | Shuffle the order of the firms.
 
@@ -86,7 +105,7 @@ def shuffle_firms(
     )
 
 
-def get_non_zero_values_from_matrix(matrix):
+def get_non_zero_values_from_matrix(matrix: ndarray) -> dict:
     """
     | Returns a dictionary with row indices as keys and tuples of non-zero values and indices as values.
 

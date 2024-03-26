@@ -3,78 +3,65 @@ import random
 
 import numpy as np
 import pandas as pd
-from scipy.stats import multivariate_normal, norm
+from numpy import ndarray
 
-from abm_vec.essentials import compute_pd, get_git_root_directory
-
-
-def truncated_pareto_inv(y, alpha, lb, ub):
-    return (
-        -(y * ub**alpha - y * lb**alpha - ub**alpha) / (lb**alpha * ub**alpha)
-    ) ** (-1 / alpha)
+from abm_vec.essentials.default_probability import compute_pd
+from abm_vec.essentials.distributions import bounded_pareto_normal
+from abm_vec.essentials.util import get_git_root_directory
 
 
-def boundedParetoNormal(size, lb1, lb2, ub1, ub2, alpha1, alpha2, rho):
-    marginal_distribution = multivariate_normal(mean=[0, 0], cov=[[1, rho], [rho, 1]])
-    random_samples_marginal = marginal_distribution.rvs(size=size)
-    copula_samples = norm.cdf(random_samples_marginal)
-    x1 = truncated_pareto_inv(copula_samples[:, 0], alpha1, lb1, ub1)
-    x2 = truncated_pareto_inv(copula_samples[:, 1], alpha2, lb2, ub2)
-    return x1, x2
-
-
-def get_bank_data():
+def get_bank_data() -> dict[str, np.ndarray]:
     """
-    | Loads the bank data from the excel file and returns it as a dictionary.
-    :return: dictionary with bank data
+    | Loads the bank data retried from Fitch Connect and returns it as a dictionary.
+
+    :return: dictionary with bank data as vectors.
     """
-    bank_df = pd.read_excel(
+    bank_df: pd.DataFrame = pd.read_excel(
         os.path.join(get_git_root_directory(), "data/banks-swiss.xlsx")
     )
-    bank_df = bank_df[
+    bank_df = bank_df.loc[
         (bank_df["Total Deposits"] != "-")
         & (bank_df["Gross Loans"] != "-")
-        & (bank_df["Total Corp. Loans"] != "-")
+        & (bank_df["Total Corp. Loans"] != "-"),
+        :,
     ]
-    bank_df = bank_df.iloc[1:, :]
+    # bank_df = bank_df.iloc[1:, :]
     bank_df.reset_index(inplace=True, drop=True)
-    bank_df["bank_id"] = bank_df.index.map(lambda x: f"bank_{x + 1}")
-    # get the bank data
-    bank_equity = bank_df["Total Equity"].values * 10**6
-    bank_deposits = bank_df["Total Deposits"].values * 10**6
-    bank_loans = bank_df["Total Corp. Loans"].values * 10**6
-    # t1 cap is a ratio and should not be multiplied by 10^6.
-    bank_t1_cap = bank_df["Tier 1 Cap. Ratio"].values
+    # Equity, Deposits, and Loans need to be multiplied by 10^6 as they are reported
+    # in millions of CHF
     return {
-        "equity": bank_equity,
-        "deposits": bank_deposits,
-        "loans": bank_loans,
-        "t1_cap": bank_t1_cap,
+        "equity": bank_df["Total Equity"].values * 10**6,
+        "deposits": bank_df["Total Deposits"].values * 10**6,
+        "loans": bank_df["Total Corp. Loans"].values * 10**6,
+        "t1_cap": bank_df["Tier 1 Cap. Ratio"].values,
     }
 
 
 def generate_random_entities(calibration_variables: dict) -> tuple:
     """
-    | Generates Firms and Banks based on the calibration settings. Firms are generated randomly while banks are
-    initialized based on the swiss bank data.
+    | Generate random firms based on the model parameters.
+    | The generation of firm characteristics is as follows:
+
+    * The firm productivity is :math:`\alpha` is assumed to be constant across firms.
+
+    * The firm excess supply is drawn from a Bernoulli distribution with a certain probability.
+
+    * The firm wage is the minimum wage plus a random adjustment.
+
+    * The firm maximum leverage is drawn from a uniform distribution.
+
+    * The firm price is the market price plus a random adjustment.
+
+    * The firm equity and supply are drawn from a join distribution with bounded pareto marginals and normal copula.
+
+    * The firm profit is set to zero.
+
+    * The firm probability of default is computed based on the firm maximum leverage and the calibration parameter.
 
     :param calibration_variables: Dictionary containing all calibration settings from calibration.py
     :return: A tuple containing the generated firms & banks vectors of info.
     """
 
-    # get firm data
-    # firm_equity = np.array(
-    #     [
-    #         max(
-    #             calibration_variables["firm_equity_scaling"] * x,
-    #             calibration_variables["firm_equity_scaling"] * 0.5,
-    #         )
-    #         for x in np.random.poisson(
-    #             calibration_variables["firm_equity_poisson_lambda"],
-    #             calibration_variables["FIRMS"],
-    #         )
-    #     ]
-    # )
     firm_prod = np.array(
         [calibration_variables["min_productivity"]] * calibration_variables["FIRMS"]
     )
@@ -118,19 +105,8 @@ def generate_random_entities(calibration_variables: dict) -> tuple:
             - calibration_variables["min_max_leverage"]
         )
     )
-    # firm_supply = np.array(
-    #     [
-    #         max(
-    #             calibration_variables["firm_supply_scaling"] * x,
-    #             calibration_variables["firm_supply_scaling"] * 0.5,
-    #         )
-    #         for x in np.random.poisson(
-    #             calibration_variables["firm_supply_poisson_lambda"],
-    #             calibration_variables["FIRMS"],
-    #         )
-    #     ]
-    # )
-    firm_equity, firm_supply = boundedParetoNormal(
+
+    firm_equity, firm_supply = bounded_pareto_normal(
         calibration_variables["FIRMS"],
         calibration_variables["firm_lb1"],
         calibration_variables["firm_lb2"],

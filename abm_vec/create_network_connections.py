@@ -18,9 +18,22 @@ def create_network_connections(
     firm_equity: ndarray,
     firm_pd: ndarray,
     bank_equity: ndarray,
-):
+) -> tuple:
     """
     | Create the Bank-to-Firm Loans, Bank-to-Bank Loans and the Bank-to-Bank CDS contracts.
+
+    | The function covers the following steps:
+
+    #. It iterates through each firm, sorting the available loans and attempting to secure one based on credit
+    demand and the lending bank’s capacity.
+
+    #. If a bank does not have enough credit or deposit to issue a loan, it seeks an interbank loan.
+    The conditions for these loans depend on several factors like financial fragility, policy rate, and calibration
+    variables.
+
+    #. The function also handles the creation of CDS contracts, both covered and naked, based on certain probabilities.
+    These contracts are established between different banks for each firm, depending on various factors including the
+    default probability of the firm and the financial condition of the banks.
 
     :param loans_by_firm: Dictionary of possible loans for every firm
     :param calibration_variables: Calibration variables

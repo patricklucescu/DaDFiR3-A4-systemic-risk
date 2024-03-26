@@ -1,3 +1,4 @@
+import copy
 import random
 
 import numpy as np
@@ -6,29 +7,42 @@ from abm_vec.banks import asses_loan_requests_firms
 from abm_vec.calibration import get_calibration_variables
 from abm_vec.clear_firm_default import clear_firm_default
 from abm_vec.clear_interbank_market import clear_interbank_market
+from abm_vec.compute_expected_supply_price import compute_expected_supply_price
 from abm_vec.create_network_connections import create_network_connections
-from abm_vec.essentials import compute_expected_supply_price, wages_adj
-from abm_vec.firms import (check_loan_desire_and_choose_loans,
-                           get_non_zero_values_from_matrix, shuffle_firms)
+from abm_vec.essentials.market_adjustments import wages_adj
+from abm_vec.firms import (
+    check_loan_desire_and_choose_loans,
+    get_non_zero_values_from_matrix,
+    shuffle_firms,
+)
 from abm_vec.initialization import generate_random_entities
 
+# def run_sim(parameters):
+#     calibration_variables = get_calibration_variables()
+#     if parameters is not None:
+#         calibration_variables.update(parameters)
 
-def run_simulation(seed: int, bank_data: dict, parameters: dict):
+
+def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
     """
     | Run the simulation for a given set of parameters and a seed.
     :param seed: Seed to be used for the simulation
     :param bank_data: dictionary with bank data extracted from the Excel file
-    :param parameters: dictionary with parameters
+    :param calibration_variables: dictionary with parameters
     :return:
     """
-    # set seed
+    results = {
+        "seed": seed,
+        "use_bank_weights": True,
+        "calibration_variables": calibration_variables,
+        "bank_weights": None,
+        "start_period": None,
+        "end_period": None,
+    }
+
     random.seed(seed)
     np.random.seed(seed)
     use_bank_weights = True
-    # get calibration variables for initialization and markov model
-    calibration_variables = get_calibration_variables()
-    if parameters is not None:
-        calibration_variables.update(parameters)
 
     # get bank data
     bank_equity = bank_data["equity"]
@@ -55,6 +69,7 @@ def run_simulation(seed: int, bank_data: dict, parameters: dict):
         bank_weights = bank_loans / sum(bank_loans)
     else:
         bank_weights = np.array([1 / num_banks] * num_banks)
+    results["bank_weights"] = bank_weights
 
     # begin the simulation part
     for t in range(calibration_variables["T"]):
@@ -83,6 +98,8 @@ def run_simulation(seed: int, bank_data: dict, parameters: dict):
             firm_price,
             firm_max_leverage,
         )
+        # store start of info
+        old_firm_price = copy.deepcopy(firm_price)
         # for each firm compute expected supply and see who wants loans
         firm_wage = wages_adj(firm_wage, calibration_variables["min_wage"])
         (
@@ -101,6 +118,7 @@ def run_simulation(seed: int, bank_data: dict, parameters: dict):
             firm_profit,
             firm_max_leverage,
             firm_equity,
+            calibration_variables["policy_rate"],
         )
 
         firm_credit_demand = np.maximum(0, firm_total_wage - firm_equity)
@@ -158,6 +176,7 @@ def run_simulation(seed: int, bank_data: dict, parameters: dict):
             bank_equity,
         )
         # change market price
+        old_price = copy.deepcopy(calibration_variables["market_price"])
         calibration_variables["market_price"] = np.average(firm_price)
 
         # Figure out firm default and update CDS recovery rate accordingly
@@ -214,4 +233,14 @@ def run_simulation(seed: int, bank_data: dict, parameters: dict):
             bank_current_deposit,
             cds_spread_amount,
             cds_dict,
+        )
+        return (
+            bank_loans / prior_period_equity,
+            bank_loan_asset / prior_period_equity,
+            len(defaulting_banks),
+            len(defaulting_firms),
+            firm_price,
+            old_price,
+            old_firm_price,
+            calibration_variables["market_price"],
         )

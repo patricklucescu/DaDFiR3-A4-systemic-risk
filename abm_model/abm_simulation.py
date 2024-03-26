@@ -12,8 +12,7 @@ from abm_model.clear_firm_default import clear_firm_default
 from abm_model.clear_interbank_market import clear_interbank_market
 from abm_model.create_network_connections import create_network_connections
 from abm_model.essentials import merge_dict
-from abm_model.initialization import \
-    generate_random_entities  # , generate_new_entities
+from abm_model.initialization import generate_random_entities  # , generate_new_entities
 from abm_model.markov_model import MarkovModel
 
 seed_value = 0

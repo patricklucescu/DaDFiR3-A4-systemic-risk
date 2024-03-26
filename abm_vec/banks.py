@@ -1,17 +1,22 @@
 import numpy as np
+from numpy import ndarray
 
 
 def asses_loan_requests_firms(
-    loan_indicator,
-    firm_credit_demand,
-    bank_max_credit,
-    firm_pd,
-    firm_financial_fragility,
-    policy_rate,
-    theta,
-):
+    loan_indicator: ndarray,
+    firm_credit_demand: ndarray,
+    bank_max_credit: ndarray,
+    firm_pd: ndarray,
+    firm_financial_fragility: ndarray,
+    policy_rate: float,
+    theta: float,
+) -> ndarray:
     """
     | Asses firms loan requests and compute interest rates.
+
+    | The function operates by first determining which firms are eligible for loans based on their demand and the
+    maximum credit available from banks. It then calculates the interest rate for each loan using a combination of the
+    policy rate and two random factors that are influenced by the firm's probability of default and financial fragility.
 
     :param loan_indicator: matrix indicating if firm i is interested in bank j
     :param firm_credit_demand: credit demanded by firms
@@ -46,9 +51,16 @@ def asses_loan_requests_firms(
     return loan_interest
 
 
-def asses_interbank_loans(financial_fragility, policy_rate, num_requests, theta):
+def asses_interbank_loans(
+    financial_fragility: ndarray,
+    policy_rate: float,
+    num_requests: float | int,
+    theta: float,
+) -> ndarray:
     """
     | Compute the interbank loan request for a bank. Similar to firms but a bit simpler.
+
+    | It takes into account the financial fragility of the bank and the policy rate. It also uses a random factor.
 
     :param financial_fragility: Financial fragility of the bank that wants to borrow money
     :param policy_rate: Policy rate
@@ -61,9 +73,11 @@ def asses_interbank_loans(financial_fragility, policy_rate, num_requests, theta)
     return policy_rate * (1 + random_factor1 * np.tanh(financial_fragility))
 
 
-def provide_cds_spread(prob_default, policy_rate, interest_rate):
+def provide_cds_spread(
+    prob_default: float, policy_rate: float, interest_rate: float
+) -> float:
     """
-    | Function calculates and provides the spread value for a credit default swap (CDS) based on the Hull CDS
+    | Calculates and provides the spread value for a credit default swap (CDS) based on the Hull CDS
     valuation model for a one-period model.
 
     :param prob_default: Probability default of underlying firm
@@ -82,7 +96,14 @@ def provide_cds_spread(prob_default, policy_rate, interest_rate):
     return (1 - recover_rate - A * recover_rate) * q * v / (q * (u + e) + pi * u)
 
 
-def check_cds(deposit, loan_liability, loan_asset, equity, cds_asset, premium):
+def check_cds(
+    deposit: float,
+    loan_liability: float,
+    loan_asset: float,
+    equity: float,
+    cds_asset: float,
+    premium: float,
+) -> bool:
     """
     | Checks if the CDS can be granted based on the maximum credit limit and other loan and asset amounts.
 

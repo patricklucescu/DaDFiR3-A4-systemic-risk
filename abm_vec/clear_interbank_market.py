@@ -1,22 +1,28 @@
 import numpy as np
+from numpy import ndarray
 
 
 def clear_interbank_market(
-    num_banks,
-    loan_banks_interest,
-    loan_banks_amount,
-    recovery_rate,
-    defaulting_firms,
-    loan_firm_value,
-    bank_equity,
-    deposit_change,
-    bank_deposits,
-    bank_current_deposit,
-    cds_spread_amount,
-    cds_dict,
+    num_banks: int,
+    loan_banks_interest: ndarray,
+    loan_banks_amount: ndarray,
+    recovery_rate: ndarray,
+    defaulting_firms: ndarray,
+    loan_firm_value: ndarray,
+    bank_equity: ndarray,
+    deposit_change: ndarray,
+    bank_deposits: ndarray,
+    bank_current_deposit: ndarray,
+    cds_spread_amount: ndarray,
+    cds_dict: dict,
 ):
     """
-    | This function clears the interbank market and updates the equity and deposits of the banks.
+    | Processes the clearing of the interbank market, considering loans, defaults, and Credit Default Swaps (CDS),
+    and updates the financial status of banks accordingly.
+
+    | This function computes and adjusts the equity and deposits of banks based on interbank loans, CDS contracts,
+     and defaults in the system. It takes into account the complex interactions between these elements to reflect the
+     changes in the banks' financial state after market clearing.
 
     :param num_banks: Number of banks
     :param loan_banks_interest: Matrix of loans interest from each bank to each other bank
@@ -50,10 +56,12 @@ def clear_interbank_market(
 
     # see which bank are defaulting
     Lbar = np.sum(liabilities, axis=1)
-    Lbar_inverse = np.where(Lbar != 0, 1 / Lbar, 0)
+    Lbar_inverse = np.zeros_like(Lbar, dtype=float)
+    non_zero_mask = (Lbar != 0)
+    Lbar_inverse[non_zero_mask] = 1 / Lbar[non_zero_mask]
     Pi = np.matmul(np.diag(Lbar_inverse), liabilities)
     default = True
-    default_set = 0.0
+    default_set = []
     payments = Lbar.copy()
     money_from_loan = np.sum(loan_firm_value, axis=0)
     initial_wealth = bank_equity + money_from_loan + np.minimum(deposit_change, 0)
@@ -83,13 +91,15 @@ def clear_interbank_market(
     default_set = np.concatenate(
         (default_set, np.where(bank_earnings < money_for_deposits)[0])
     )
+    default_set = default_set.astype(int)
+    default_set = np.unique(default_set)
     # deal with defaulting banks
     if len(default_set) > 0:
         bank_equity[default_set] = 0
         bank_current_deposit[default_set] += bank_earnings[default_set]
         bank_deposits[default_set] = bank_current_deposit[default_set] + np.maximum(
             deposit_change[default_set], 0
-        )
+            )
     # deal with non defaulting banks
     non_default = ~np.isin(np.arange(num_banks), default_set)
     bank_current_deposit[non_default] += money_for_deposits[non_default]
