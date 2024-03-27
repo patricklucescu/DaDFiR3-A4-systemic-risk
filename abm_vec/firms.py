@@ -46,7 +46,7 @@ def check_loan_desire_and_choose_loans(
         1,
         np.tile(np.arange(num_banks), (firms_needing_loan.size, 1)),
     )
-    # Take the first two banks from each permutation
+    # Take the first max_bank_loan banks from each permutation
     chosen_banks = random_bank_permutations[:, :max_bank_loan]
     # Create an array of indices to select the appropriate elements in loan_interest
     firm_indices = np.repeat(firms_needing_loan[:, np.newaxis], max_bank_loan, axis=1)
@@ -64,7 +64,7 @@ def get_loan_priority(row):
 
 
 def shuffle_firms(
-    num_firms: ndarray,
+    num_firms: int,
     firm_equity: ndarray,
     firm_prod: ndarray,
     firm_ex_supply: ndarray,

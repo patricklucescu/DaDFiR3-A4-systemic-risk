@@ -107,6 +107,7 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
             firm_supply,
             firm_total_wage,
             supply_threshold_breach,
+            min_price_breach
         ) = compute_expected_supply_price(
             firm_ex_supply,
             firm_supply,
