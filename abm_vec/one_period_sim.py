@@ -105,6 +105,7 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
         firm_price,
         firm_max_leverage,
     )
+    #TODO: remove this
     # results[0]["firms"]["firm_equity"] = firm_equity.copy()
     # results[0]["firms"]["firm_prod"] = firm_prod.copy()
     # results[0]["firms"]["firm_ex_supply"] = firm_ex_supply.copy()
@@ -146,12 +147,13 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
         calibration_variables["max_bank_loan"],
         bank_weights,
     )
+    # TODO: remove this
     # results[1]["firms"]["firm_wage"] = firm_wage.copy()
     # results[1]["firms"]["firm_price"] = firm_price.copy()
     # results[1]["firms"]["supply_threshold_breach"] = supply_threshold_breach
     # results[1]["firms"]["firm_credit_demand"] = firm_credit_demand.copy()
     # results[1]["firms"]["firm_financial_fragility"] = firm_financial_fragility.copy()
-    results[1]["firms"]["min_price_breach"] = min_price_breach
+    # results[1]["firms"]["min_price_breach"] = min_price_breach
 
     # let bank give interest rates
     bank_current_deposit = bank_deposits.copy()
@@ -165,7 +167,7 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
         calibration_variables["policy_rate"],
         calibration_variables["h_theta"],
     )
-    # results[1]["banks"]["bank_max_credit"] = bank_max_credit.copy()
+    results[1]["banks"]["bank_max_credit"] = bank_max_credit.copy()
 
     # get loans by firm
     loans_by_firm = get_non_zero_values_from_matrix(firm_interest)
@@ -206,7 +208,7 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
     # results["connections"]["cds_amount"] = cds_amount.copy()
     # results["connections"]["cds_spread"] = cds_spread.copy()
     # results["connections"]["cds_spread_amount"] = cds_spread_amount.copy()
-    # results["connections"]["cds_dict"] = cds_dict.copy()
+    results["connections"]["cds_dict"] = cds_dict.copy()
     results[1]["banks"]["bank_loans"] = bank_loan_asset.copy()
 
     # Figure out firm default and update CDS recovery rate accordingly
@@ -236,7 +238,7 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
     # results[1]["firms"]["firm_ex_supply"] = firm_ex_supply.copy()
     # results[1]["firms"]["firm_supply"] = firm_supply.copy()
     # results[1]["firms"]["recovery_rate"] = recovery_rate.copy()
-    results[1]["firms"]["defaulting_firms"] = defaulting_firms.copy()
+    # results[1]["firms"]["defaulting_firms"] = defaulting_firms.copy()
     # results[1]["firms"]["firm_total_wage"] = firm_total_wage.copy()
 
     # do deposit change
@@ -256,6 +258,7 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
         defaulting_banks,
         bank_equity,
         bank_deposits,
+        liabilities
     ) = clear_interbank_market(
         num_banks,
         loan_banks_interest,
@@ -273,5 +276,6 @@ def run_one_sim(seed: int, bank_data: dict, calibration_variables: dict):
     results[1]["banks"]["bank_equity"] = bank_equity.copy()
     results[1]["banks"]["bank_deposits"] = bank_deposits.copy()
     results[1]["banks"]["defaulted_banks"] = defaulting_banks.copy()
+    results[1]["banks"]["liability_matrix"] = liabilities.copy()
 
     return results

@@ -29,6 +29,7 @@ def generate_log():
                 "bank_loans": None,
                 "defaulted_banks": None,
                 "bank_max_credit": None,
+                "liability_matrix": None,
             },
             "firms": {
                 "firm_equity": None,

@@ -114,4 +114,5 @@ def clear_interbank_market(
         default_set,
         bank_equity,
         bank_deposits,
+        liabilities
     )
